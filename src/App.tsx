@@ -1,9 +1,10 @@
-import { useState } from "react";
-import loginService from "./services/login";
-import "./App.css";
-import VideoUpload from "./components/VideoUpload";
-import VideoPlayer from "./components/VideoPlayer";
+import { useEffect, useState } from "react";
 import VideoListing from "./components/VideoListing";
+import VideoUpload from "./components/VideoUpload";
+import useVideoSelection from "./hooks/useVideoSelection";
+import loginService from "./services/login";
+import { LoginCredentials, LoginResponse } from "./types/login";
+import "./App.css";
 
 function App() {
   const [email, setEmail] = useState("");
@@ -11,23 +12,36 @@ function App() {
   const [user, setUser] = useState<{ email: string } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = async (event) => {
+  const { selectedVideoId } = useVideoSelection();
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const loginResponse = await loginService.login({ email, password });
+      const loginResponse: LoginResponse = await loginService.login({
+        email,
+        password,
+      } as LoginCredentials);
       const { user, accesToken, refreshToken } = loginResponse.data;
       localStorage.setItem("accessToken", accesToken);
       localStorage.setItem("refreshToken", refreshToken);
       localStorage.setItem("user", JSON.stringify(user));
       setUser(user);
       setErrorMessage(null);
-    } catch (error) {
-      setErrorMessage("Credenciales incorrectas" + error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setErrorMessage("Credenciales incorrectas: " + error.message);
+      } else {
+        setErrorMessage("Credenciales incorrectas: An unknown error occurred.");
+      }
       setTimeout(() => {
         setErrorMessage(null);
       }, 5000);
     }
   };
+
+  useEffect(() => {
+    console.log("Selected video ID app:", selectedVideoId);
+  }, [selectedVideoId]);
 
   return (
     <>
@@ -61,8 +75,11 @@ function App() {
         <>
           <div>Bienvenido, {user.email}</div>
           <VideoUpload />
-          <VideoPlayer videoId="12345" />
+          {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
+
+          {/* Pass the selectVideo function to VideoListing */}
           <VideoListing />
+
           {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
         </>
       )}

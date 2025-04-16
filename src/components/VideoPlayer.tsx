@@ -1,57 +1,39 @@
-import { useState, useEffect } from "react";
-import videoService from "../services/video";
+import { useEffect, useRef, useState } from "react";
+import { Video } from "../types/video";
 
-export interface Video {
-  id: string;
-  title: string;
-  fileKey: string;
-  fileUrl: string;
-  contentType: string;
-  fileSize: number;
-  description: string;
-  createdAt: string;
-}
-
-const VideoPlayer = ({ videoId }: { videoId: string }) => {
-  const [video, setVideo] = useState<Video | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const VideoPlayer = ({ video }: { video: Video }) => {
+  const [videoData, setVideoData] = useState<Video>(video);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const fetchVideo = async () => {
-      try {
-        setLoading(true);
-        const response = await videoService.fetchAllVideos();
-        setVideo(response.data.data);
-      } catch (err) {
-        setError("Error al cargar el video");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Actualizar el estado local cuando cambia la prop
+    setVideoData(video);
 
-    fetchVideo();
-  }, [videoId]);
-
-  if (loading) return <div>Cargando video...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!video) return <div>No se encontró el video</div>;
+    // Acceder directamente al elemento de video mediante la ref
+    if (videoRef.current) {
+      // Cargar el nuevo video
+      videoRef.current.load();
+      // Si quieres reproducir automáticamente después de cargar:
+      // videoRef.current.play();
+    }
+  }, [video]);
 
   return (
     <div>
-      <h2>{video.title}</h2>
-      <p>{video.description}</p>
+      <h2>{videoData.title}</h2>
+      <p>{videoData.description}</p>
       <video
+        ref={videoRef}
         controls
-        width="100%"
+        height={300}
+        width={600}
         poster="/placeholder-thumbnail.jpg"
         preload="metadata"
       >
-        <source src={video.fileUrl} type={video.contentType} />
+        <source src={videoData.fileUrl} type={videoData.contentType} />
         Tu navegador no soporta la reproducción de videos.
       </video>
-      <p>Publicado: {new Date(video.createdAt).toLocaleDateString()}</p>
+      <p>Publicado: {new Date(videoData.createdAt).toLocaleDateString()}</p>
     </div>
   );
 };
