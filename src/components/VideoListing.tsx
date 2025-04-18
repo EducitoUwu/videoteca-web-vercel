@@ -66,31 +66,25 @@ const VideoListing = () => {
         <div style={{ marginTop: "20px" }}>
           <h3>Available Videos</h3>
           <ul style={{ listStyle: "none", padding: 0 }}>
-          {videos.map((video) => (
-            <li
-              key={video.id}
-              style={{
-                margin: '10px 0',
-                padding: '10px',
-                border: '1px solid #ddd',
-                borderRadius: '5px',
-                cursor: 'pointer',
-              }}
-              onClick={() => handleVideoSelect(video.id)}
-            >
-              <h4>{video.title}</h4>
-              {video.category && (
-                <p style={{ fontStyle: 'italic', color: '#666' }}>
-                  Categoría: {video.category.name}
-                </p>
-              )}
-              {video.description && <p>{video.description}</p>}
-              <small>
-                Created: {new Date(video.createdAt).toLocaleDateString()}
-              </small>
-            </li>
-          ))}
-
+            {videos.map((video) => (
+              <li
+                key={video.id}
+                style={{
+                  margin: "10px 0",
+                  padding: "10px",
+                  border: "1px solid #ddd",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                }}
+                onClick={() => handleVideoSelect(video.id)}
+              >
+                <h4>{video.title}</h4>
+                {video.description && <p>{video.description}</p>}
+                <small>
+                  Created: {new Date(video.createdAt).toLocaleDateString()}
+                </small>
+              </li>
+            ))}
           </ul>
         </div>
       )}
