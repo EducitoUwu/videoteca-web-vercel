@@ -4,7 +4,7 @@ import VideoUpload from "./components/VideoUpload";
 import useVideoSelection from "./hooks/useVideoSelection";
 import loginService from "./services/login";
 import { LoginCredentials, LoginResponse } from "./types/login";
-import "./App.css";
+import { Button } from "./components/ui/button";
 
 function App() {
   const [email, setEmail] = useState("");
@@ -47,13 +47,7 @@ function App() {
     <>
       <form
         onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          width: "300px",
-          margin: "0 auto",
-          gap: "10px",
-        }}
+        className={"flex flex-col w-72 mx-auto gap-2.5"}
       >
         <input
           type="email"
@@ -69,7 +63,7 @@ function App() {
           placeholder="********"
           onChange={({ target }) => setPassword(target.value)}
         />
-        <button type="submit">Login</button>
+        <Button type="submit">Login</Button>
       </form>
       {user && (
         <>
