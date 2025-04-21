@@ -1,3 +1,8 @@
+export interface Category {
+  id: string;
+  name: string;
+}
+
 export interface Video {
   id: string;
   title: string;
@@ -7,4 +12,5 @@ export interface Video {
   fileSize: number;
   description: string;
   createdAt: string;
+  category?: Category; // 👈 importante
 }
