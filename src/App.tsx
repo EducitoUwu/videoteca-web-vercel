@@ -4,6 +4,7 @@ import VideoUpload from "./components/VideoUpload";
 import useVideoSelection from "./hooks/useVideoSelection";
 import loginService from "./services/login";
 import { LoginCredentials, LoginResponse } from "./types/login";
+import ManualBuilder from "./components/manualBuilder/ManualBuilder";
 import "./App.css";
 
 function App() {
@@ -11,8 +12,14 @@ function App() {
   const [password, setPassword] = useState("");
   const [user, setUser] = useState<{ email: string } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [manualMode, setManualMode] = useState(false);
 
   const { selectedVideoId } = useVideoSelection();
+
+  useEffect(() => {
+    // Solo para pruebas sin login
+    setUser({ email: "test@dev.com" });
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,8 +50,9 @@ function App() {
     console.log("Selected video ID app:", selectedVideoId);
   }, [selectedVideoId]);
 
-  return (
-    <>
+  // 🔒 Esto solo se ejecuta si user está vacío (antes de setUser)
+  if (!user) {
+    return (
       <form
         onSubmit={handleSubmit}
         style={{
@@ -71,18 +79,28 @@ function App() {
         />
         <button type="submit">Login</button>
       </form>
-      {user && (
+    );
+  }
+
+  return (
+    <>
+      <div style={{ display: "flex", justifyContent: "space-between", padding: "1rem" }}>
+        <div>Bienvenido, {user.email}</div>
+        <button onClick={() => setManualMode(!manualMode)}>
+          {manualMode ? "Volver a Videoteca" : "Ir al Manual Builder"}
+        </button>
+      </div>
+
+      {manualMode ? (
+        <ManualBuilder />
+      ) : (
         <>
-          <div>Bienvenido, {user.email}</div>
           <VideoUpload />
-          {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
-
-          {/* Pass the selectVideo function to VideoListing */}
           <VideoListing />
-
-          {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
         </>
       )}
+
+      {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
     </>
   );
 }
