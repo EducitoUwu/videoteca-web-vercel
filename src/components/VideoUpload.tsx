@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 
 const VideoUpload = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -46,7 +54,6 @@ const VideoUpload = () => {
       setProgress(0);
       setError(null);
 
-      // Crear categoría si se escribió una nueva
       let categoryId = selectedCategory;
       if (!selectedCategory && newCategory.trim() !== '') {
         const response = await axios.post('http://localhost:9999/api/v1/categories', {
@@ -75,7 +82,6 @@ const VideoUpload = () => {
             );
             setProgress(percentCompleted);
           },
-          
         }
       );
 
@@ -90,91 +96,104 @@ const VideoUpload = () => {
   };
 
   return (
-    <div>
-      <h2>Upload Video</h2>
-      {error && <div style={{ color: 'red' }}>{error}</div>}
+    <Card className="p-4 bg-blue-50">
+      <CardHeader>
+        <CardTitle className="text-blue-800">Subir Video</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {error && <div className="text-red-500 mb-2">{error}</div>}
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Title:</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            disabled={loading}
-          />
-        </div>
-
-        <div>
-          <label>Description:</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            disabled={loading}
-          />
-        </div>
-
-        <div>
-          <label>Choose video file:</label>
-          <input
-            type="file"
-            accept="video/*"
-            onChange={handleFileChange}
-            required
-            disabled={loading}
-          />
-        </div>
-
-        <div>
-          <label>Select existing category:</label>
-          <select
-            value={selectedCategory || ''}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            disabled={loading}
-          >
-            <option value="">-- None --</option>
-            {categories.map((cat: any) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label>Or create new category:</label>
-          <input
-            type="text"
-            value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
-            disabled={loading}
-          />
-        </div>
-
-        <button type="submit" disabled={loading || !file || isSubmitting}>
-          {loading ? 'Uploading...' : 'Upload Video'}
-        </button>
-
-        {loading && (
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <progress value={progress} max="100" />
-            <span>{progress}%</span>
+            <Label htmlFor="title">Título</Label>
+            <Input
+              id="title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="description">Descripción</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="file">Seleccionar archivo de video</Label>
+            <Input
+              id="file"
+              type="file"
+              accept="video/*"
+              onChange={handleFileChange}
+              required
+              disabled={loading}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="category">Seleccionar categoría existente</Label>
+            <Select
+              value={selectedCategory || ''}
+              onValueChange={(value) => setSelectedCategory(value)}
+              disabled={loading}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="-- Ninguna --" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat: any) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="newCategory">O crear nueva categoría</Label>
+            <Input
+              id="newCategory"
+              type="text"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+
+          <Button type="submit" disabled={loading || !file || isSubmitting} className="w-full">
+            {loading ? "Subiendo..." : "Subir Video"}
+          </Button>
+
+          {loading && (
+            <div className="mt-4">
+              <Progress value={progress} />
+              <span className="text-sm text-blue-700">{progress}%</span>
+            </div>
+          )}
+        </form>
+
+        {videoUrl && (
+          <div className="mt-6">
+            <h3 className="text-green-600 font-semibold mb-2">¡Video subido con éxito!</h3>
+            <video controls width="100%" className="rounded-md shadow">
+              <source src={videoUrl} />
+              Tu navegador no soporta la reproducción de video.
+            </video>
           </div>
         )}
-      </form>
-
-      {videoUrl && (
-        <div>
-          <h3>Video uploaded successfully</h3>
-          <video controls width="500">
-            <source src={videoUrl} />
-            Your browser does not support video playback.
-          </video>
-        </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
 export default VideoUpload;
+              

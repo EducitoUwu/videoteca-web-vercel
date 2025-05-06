@@ -4,6 +4,13 @@ import videoService from "../services/video";
 import VideoPlayer from "./VideoPlayer";
 import { Video } from "../types/video";
 import useVideoData from "../hooks/useVideoData";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const VideoListing = () => {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -37,61 +44,55 @@ const VideoListing = () => {
   };
 
   return (
-    <div>
-      <h1>Video Player</h1>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold text-blue-800 mb-4">Reproductor de Videos</h1>
       {video && (
-        <div style={{ marginBottom: "20px" }}>
-          <h3>Selected Video</h3>
-          <p>{video.title}</p>
-          {video.description && <p>{video.description}</p>}
-          <small>
-            Created: {new Date(video.createdAt).toLocaleDateString()}
-          </small>
-          <VideoPlayer video={video} />
-        </div>
+        <Card className="mb-6 bg-blue-50">
+          <CardHeader>
+            <CardTitle>{video.title}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {video.description && <p>{video.description}</p>}
+            <small>
+              Creado: {new Date(video.createdAt).toLocaleDateString()}
+            </small>
+            <VideoPlayer video={video} />
+          </CardContent>
+        </Card>
       )}
 
-      <h2>Video Selection</h2>
-      <p>Select a video to play</p>
+      <h2 className="text-xl font-semibold text-blue-700 mb-2">Listado de Videos</h2>
 
-      <h2>Video Listing</h2>
+      {loading && <p>Cargando videos...</p>}
 
-      {loading && <p>Loading videos...</p>}
+      {error && <p className="text-red-500">{error}</p>}
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {videos.length === 0 && !loading && <p>No videos available.</p>}
+      {videos.length === 0 && !loading && <p>No hay videos disponibles.</p>}
 
       {videos.length > 0 && !loading && (
-        <div style={{ marginTop: "20px" }}>
-          <h3>Available Videos</h3>
-          <ul style={{ listStyle: "none", padding: 0 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {videos.map((video) => (
-            <li
+            <Card
               key={video.id}
-              style={{
-                margin: '10px 0',
-                padding: '10px',
-                border: '1px solid #ddd',
-                borderRadius: '5px',
-                cursor: 'pointer',
-              }}
+              className="cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => handleVideoSelect(video.id)}
             >
-              <h4>{video.title}</h4>
-              {video.category && (
-                <p style={{ fontStyle: 'italic', color: '#666' }}>
-                  Categoría: {video.category.name}
-                </p>
-              )}
-              {video.description && <p>{video.description}</p>}
-              <small>
-                Created: {new Date(video.createdAt).toLocaleDateString()}
-              </small>
-            </li>
+              <CardHeader>
+                <CardTitle>{video.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {video.category && (
+                  <p className="italic text-gray-600">
+                    Categoría: {video.category.name}
+                  </p>
+                )}
+                {video.description && <p>{video.description}</p>}
+                <small>
+                  Creado: {new Date(video.createdAt).toLocaleDateString()}
+                </small>
+              </CardContent>
+            </Card>
           ))}
-
-          </ul>
         </div>
       )}
     </div>
