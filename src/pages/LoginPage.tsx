@@ -37,35 +37,53 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">
-      <Card className="w-full max-w-md shadow-lg border-blue-200 border">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-blue-300 to-blue-100 relative overflow-hidden">
+      {/* Fondo animado */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-300 opacity-50 animate-pulse"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-400 to-cyan-200 opacity-30 blur-2xl"></div>
+
+      <Card className="relative w-full max-w-md shadow-2xl border border-blue-300 bg-white/90 backdrop-blur-md">
         <CardHeader>
-          <CardTitle className="text-center text-blue-800">Iniciar sesión</CardTitle>
+          <CardTitle className="text-center text-blue-800 text-2xl font-bold">
+            Bienvenido
+          </CardTitle>
+          <p className="text-center text-blue-600 text-sm">
+            Por favor, inicia sesión para continuar
+          </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             <div>
-              <Label htmlFor="email">Correo electrónico</Label>
+              <Label htmlFor="email" className="text-blue-700">
+                Correo electrónico
+              </Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="border-blue-300 focus:ring-blue-500"
               />
             </div>
             <div>
-              <Label htmlFor="password">Contraseña</Label>
+              <Label htmlFor="password" className="text-blue-700">
+                Contraseña
+              </Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="border-blue-300 focus:ring-blue-500"
               />
             </div>
             {error && <span className="text-red-500 text-sm">{error}</span>}
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+            <Button
+              type="submit"
+              className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold py-2 rounded-lg hover:from-blue-700 hover:to-cyan-600 transition-all duration-300"
+            >
               Ingresar
             </Button>
           </form>
