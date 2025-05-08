@@ -1,38 +1,46 @@
-import { createContext, useState, useEffect, ReactNode } from 'react';
-import { User } from '../types/login';
+import { createContext, useState, useEffect, ReactNode } from "react";
+import { User, onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "../firebaseConfig";
 
 interface AuthContextType {
   user: User | null;
-  login: (user: User) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
-  login: () => {},
-  logout: () => {},
+  logout: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) setUser(JSON.parse(storedUser));
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      const ucnRegex = /@([a-zA-Z0-9-]+\.)*ucn\.cl$/;
+      if (
+        firebaseUser &&
+        firebaseUser.email &&
+        ucnRegex.test(firebaseUser.email)
+      ) {
+        setUser(firebaseUser);
+      } else {
+        setUser(null);
+        if (firebaseUser) {
+          localStorage.setItem("ucn-alert", "1");
+          await signOut(auth);
+        }
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
-  const login = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.clear();
+  const logout = async () => {
+    await signOut(auth);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, logout }}>
       {children}
     </AuthContext.Provider>
   );

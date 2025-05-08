@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { Video } from "@/types/video";
 import videoService from "@/services/video";
 
+
 const VideoListPage = () => {
   const [videos, setVideos] = useState<Video[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -20,6 +21,7 @@ const VideoListPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [expandedVideo, setExpandedVideo] = useState<Video | null>(null);
   const navigate = useNavigate();
+ 
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -59,6 +61,7 @@ const VideoListPage = () => {
         <h1 className="text-3xl font-bold text-blue-800 w-full sm:w-auto text-left mb-2 sm:mb-0">
           Videos Disponibles
         </h1>
+        
         <Button
           onClick={() => navigate("/upload-video")}
           className="gap-2"
@@ -66,6 +69,7 @@ const VideoListPage = () => {
           <Plus className="w-4 h-4" />
           Subir nuevo video
         </Button>
+       
       </div>
 
       {/* Buscador */}
@@ -197,10 +201,12 @@ const VideoListPage = () => {
         )}
       </div>
       <div className="block sm:hidden mt-6 text-center">
-        <Button onClick={() => navigate("/upload-video")}>
-          <Plus className="w-4 h-4 mr-1" />
-          Subir nuevo video
-        </Button>
+        
+          <Button onClick={() => navigate("/upload-video")}>
+            <Plus className="w-4 h-4 mr-1" />
+            Subir nuevo video
+          </Button>
+        
       </div>
     </div>
   );

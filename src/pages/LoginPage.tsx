@@ -1,38 +1,29 @@
-import { useState, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../contexts/AuthProvider';
-import loginService from '../services/login';
-import { LoginCredentials, LoginResponse } from '../types/login';
-
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { FcGoogle } from "react-icons/fc";
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "../firebaseConfig";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response: LoginResponse = await loginService.login({ email, password } as LoginCredentials);
-      const { user, accesToken, refreshToken } = response.data;
+  useEffect(() => {
+    if (localStorage.getItem("ucn-alert")) {
+      setError("ERROR: Considere utilizar correo institucional.");
+      localStorage.removeItem("ucn-alert");
+    }
+  }, []);
 
-      localStorage.setItem('accessToken', accesToken);
-      localStorage.setItem('refreshToken', refreshToken);
-      login(user);
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
       navigate('/select');
     } catch (err) {
-      setError('Credenciales incorrectas');
+      setError('No se pudo iniciar sesión con Google');
     }
   };
 
@@ -48,45 +39,24 @@ const LoginPage = () => {
             Bienvenido
           </CardTitle>
           <p className="text-center text-blue-600 text-sm">
-            Por favor, inicia sesión para continuar
+            Inicia sesión con tu cuenta de Google para continuar
           </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            <div>
-              <Label htmlFor="email" className="text-blue-700">
-                Correo electrónico
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="border-blue-300 focus:ring-blue-500"
-              />
+          {error && (
+            <div className="mb-4 text-center text-red-600 font-semibold">
+              {error}
             </div>
-            <div>
-              <Label htmlFor="password" className="text-blue-700">
-                Contraseña
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="border-blue-300 focus:ring-blue-500"
-              />
-            </div>
-            {error && <span className="text-red-500 text-sm">{error}</span>}
-            <Button
-              type="submit"
-              className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold py-2 rounded-lg hover:from-blue-700 hover:to-cyan-600 transition-all duration-300"
-            >
-              Ingresar
-            </Button>
-          </form>
+          )}
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2 border-blue-300 hover:bg-blue-100"
+            type="button"
+            onClick={handleGoogleLogin}
+          >
+            <FcGoogle className="w-5 h-5" />
+            Iniciar sesión con Google
+          </Button>
         </CardContent>
       </Card>
     </div>
