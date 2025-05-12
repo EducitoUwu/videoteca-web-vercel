@@ -7,7 +7,7 @@ export default function SectionEditor({ manualId }: { manualId: string }) {
 
   const handleCreateSection = async () => {
     try {
-      const res = await fetch("http://localhost:5555/api/v1/manuals/section", {
+      const res = await fetch("http://localhost:9999/api/v1/manuals/section", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: sectionTitle, manualId }),

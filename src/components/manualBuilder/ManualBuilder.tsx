@@ -10,7 +10,7 @@ export default function ManualBuilder() {
 
   const handleCreateManual = async () => {
     try {
-      const res = await fetch("http://localhost:5555/api/v1/manuals", {
+      const res = await fetch("http://localhost:9999/api/v1/manuals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: manualTitle }),

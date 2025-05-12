@@ -7,7 +7,7 @@ export default function SubsectionEditor({ sectionId }: { sectionId: string }) {
 
   const handleCreate = async () => {
     try {
-      const res = await fetch("http://localhost:5555/api/v1/manuals/subsection", {
+      const res = await fetch("http://localhost:9999/api/v1/manuals/subsection", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, sectionId }),

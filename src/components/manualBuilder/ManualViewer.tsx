@@ -4,7 +4,7 @@ export default function ManualViewer({ manualId }: { manualId: string }) {
   const [manual, setManual] = useState<any>(null);
 
   useEffect(() => {
-    fetch(`http://localhost:5555/api/v1/manuals/${manualId}`)
+    fetch(`http://localhost:9999/api/v1/manuals/${manualId}`)
       .then((res) => res.json())
       .then(setManual)
       .catch((err) => console.error("Error cargando manual:", err));

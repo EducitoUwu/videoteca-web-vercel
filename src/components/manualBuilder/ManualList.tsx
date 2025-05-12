@@ -13,7 +13,7 @@ export default function ManualList({
   const [manuals, setManuals] = useState<Manual[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:5555/api/v1/manuals")
+    fetch("http://localhost:9999/api/v1/manuals")
       .then((res) => res.json())
       .then(setManuals)
       .catch((err) => console.error("Error cargando manuales:", err));

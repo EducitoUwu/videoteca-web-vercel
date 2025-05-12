@@ -7,7 +7,7 @@ export default function BlockEditor({ subsectionId }: { subsectionId: string }) 
 
   const handleCreateBlock = async () => {
     try {
-      const res = await fetch("http://localhost:5555/api/v1/manuals/block", {
+      const res = await fetch("http://localhost:9999/api/v1/manuals/block", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type, content, order, subsectionId }),
