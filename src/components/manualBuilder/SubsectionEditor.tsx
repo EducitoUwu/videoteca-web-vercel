@@ -1,11 +1,16 @@
 import { useState } from "react";
 import BlockEditor from "./Blockeditor";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function SubsectionEditor({ sectionId }: { sectionId: string }) {
   const [title, setTitle] = useState("");
   const [subsections, setSubsections] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
+    setLoading(true);
     try {
       const res = await fetch("http://localhost:9999/api/v1/manuals/subsection", {
         method: "POST",
@@ -17,6 +22,8 @@ export default function SubsectionEditor({ sectionId }: { sectionId: string }) {
       setTitle("");
     } catch (err) {
       console.error("Error creando subsección:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -27,23 +34,34 @@ export default function SubsectionEditor({ sectionId }: { sectionId: string }) {
   };
 
   return (
-    <div style={{ marginLeft: "1rem" }}>
-      <input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Título subsección"
-      />
-      <button onClick={handleCreate}>Agregar subsección</button>
-
-      {subsections.map((subsection, i) => (
-        <div key={subsection.id} style={{ marginTop: "1rem" }}>
-          <input
-            value={subsection.title}
-            onChange={(e) => handleEdit(i, e.target.value)}
-          />
-          <BlockEditor subsectionId={subsection.id} />
-        </div>
-      ))}
+    <div className="ml-4">
+      <div className="flex gap-2 mb-2">
+        <Input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Título subsección"
+          disabled={loading}
+        />
+        <Button onClick={handleCreate} disabled={!title || loading}>
+          Agregar subsección
+        </Button>
+      </div>
+      <div className="space-y-4">
+        {subsections.map((subsection, i) => (
+          <Card key={subsection.id} className="bg-blue-50 border-blue-100">
+            <CardHeader>
+              <Input
+                value={subsection.title}
+                onChange={(e) => handleEdit(i, e.target.value)}
+                className="font-semibold text-blue-700"
+              />
+            </CardHeader>
+            <CardContent>
+              <BlockEditor subsectionId={subsection.id} />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

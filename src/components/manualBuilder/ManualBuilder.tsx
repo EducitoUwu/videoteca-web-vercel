@@ -2,6 +2,9 @@ import { useState } from "react";
 import SectionEditor from "./SectionEditor";
 import ManualList from "./ManualList";
 import ManualViewer from "./ManualViewer";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function ManualBuilder() {
   const [manualTitle, setManualTitle] = useState("");
@@ -36,32 +39,45 @@ export default function ManualBuilder() {
   }
 
   return (
-    <div style={{ padding: "1rem" }}>
-      {!manualId ? (
-        <>
-          <h2>Crear nuevo manual</h2>
-          <input
-            type="text"
-            value={manualTitle}
-            placeholder="Título del manual"
-            onChange={(e) => setManualTitle(e.target.value)}
-            style={{ padding: "0.5rem" }}
-          />
-          <button onClick={handleCreateManual}>Crear Manual</button>
-        </>
-      ) : (
-        <>
-          <h2>🛠️ Constructor de Manual</h2>
-          <SectionEditor manualId={manualId} />
-          <button style={{ marginTop: "1rem" }} onClick={() => setMode("viewer")}>
-            👁️ Ver este manual
-          </button>
-        </>
-      )}
-
-      <button style={{ marginTop: "2rem" }} onClick={() => setMode("list")}>
-        📚 Ver todos los manuales creados
-      </button>
-    </div>
+    <Card className="p-6 bg-white/90 border-blue-200 shadow-lg">
+      <CardHeader>
+        <CardTitle className="text-blue-800 text-xl font-bold">
+          {manualId ? "🛠️ Constructor de Manual" : "Crear nuevo manual"}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {!manualId ? (
+          <div className="flex flex-col gap-4">
+            <Input
+              type="text"
+              value={manualTitle}
+              placeholder="Título del manual"
+              onChange={(e) => setManualTitle(e.target.value)}
+            />
+            <Button onClick={handleCreateManual} disabled={!manualTitle}>
+              Crear Manual
+            </Button>
+          </div>
+        ) : (
+          <>
+            <SectionEditor manualId={manualId} />
+            <Button
+              className="mt-4"
+              variant="outline"
+              onClick={() => setMode("viewer")}
+            >
+              👁️ Ver este manual
+            </Button>
+          </>
+        )}
+        <Button
+          className="mt-6"
+          variant="ghost"
+          onClick={() => setMode("list")}
+        >
+          📚 Ver todos los manuales creados
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
