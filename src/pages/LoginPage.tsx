@@ -1,28 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ucnLogo from "../assets/Escudo-UCN-Full-Color.png";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 
 const LoginPage = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (localStorage.getItem("ucn-alert")) {
-      setError("ERROR: Considere utilizar correo institucional.");
-      localStorage.removeItem("ucn-alert");
-    }
-  }, []);
-
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      navigate('/select');
+      const credential = await signInWithPopup(auth, provider);
+
+      const token = await credential.user.getIdToken();
+
+      const res = await fetch("http://localhost:9999/api/v1/users/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        navigate('/select');
+      } else {
+        setError("ERROR: Considere utilizar correo institucional UCN.");
+        await signOut(auth);
+      }
     } catch (err) {
       setError('No se pudo iniciar sesión con Google');
     }
@@ -30,7 +35,6 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-blue-300 to-blue-100 relative overflow-hidden">
-      {/* Fondo animado */}
       <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-300 opacity-50 animate-pulse"></div>
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-400 to-cyan-200 opacity-30 blur-2xl"></div>
 
@@ -71,7 +75,6 @@ const LoginPage = () => {
             <FcGoogle className="w-6 h-6" />
             Iniciar sesión con Google UCN
           </Button>
-          
         </CardContent>
       </Card>
     </div>

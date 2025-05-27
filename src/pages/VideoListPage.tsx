@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState,useContext } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Plus, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Video } from "@/types/video";
 import videoService from "@/services/video";
-
+import { AuthContext } from '../contexts/AuthProvider';
 
 const VideoListPage = () => {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -21,6 +21,7 @@ const VideoListPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [expandedVideo, setExpandedVideo] = useState<Video | null>(null);
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
  
 
   useEffect(() => {
@@ -62,13 +63,14 @@ const VideoListPage = () => {
           Videos Disponibles
         </h1>
         
-        <Button
+        {user?.role === "admin" && <Button
           onClick={() => navigate("/upload-video")}
           className="gap-2"
         >
           <Plus className="w-4 h-4" />
           Subir nuevo video
-        </Button>
+        </Button>}
+        
        
       </div>
 
@@ -202,10 +204,7 @@ const VideoListPage = () => {
       </div>
       <div className="block sm:hidden mt-6 text-center">
         
-          <Button onClick={() => navigate("/upload-video")}>
-            <Plus className="w-4 h-4 mr-1" />
-            Subir nuevo video
-          </Button>
+          
         
       </div>
     </div>
