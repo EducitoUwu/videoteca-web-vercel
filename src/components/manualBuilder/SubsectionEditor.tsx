@@ -4,10 +4,29 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
-export default function SubsectionEditor({ sectionId }: { sectionId: string }) {
+// Define types
+interface Block { type: string; content?: string; videoId?: string }
+interface Subsection { id: string; title: string; blocks: Block[] }
+
+interface SubsectionEditorProps {
+  sectionId: string;
+  subsections: Subsection[];
+  setSubsections: (newSubsections: Subsection[]) => void;
+}
+
+
+
+export default function SubsectionEditor({
+  sectionId,
+  subsections,
+  setSubsections
+}: SubsectionEditorProps) {
   const [title, setTitle] = useState("");
-  const [subsections, setSubsections] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // --- BLOQUES ---
+  const [editingSubId, setEditingSubId] = useState<string | null>(null);
+  const [showBlockEditor, setShowBlockEditor] = useState(false);
 
   const handleCreate = async () => {
     setLoading(true);
@@ -18,7 +37,7 @@ export default function SubsectionEditor({ sectionId }: { sectionId: string }) {
         body: JSON.stringify({ title, sectionId }),
       });
       const data = await res.json();
-      setSubsections([...subsections, data]);
+      setSubsections([...subsections, { ...data, blocks: [] }]);
       setTitle("");
     } catch (err) {
       console.error("Error creando subsección:", err);
@@ -27,10 +46,24 @@ export default function SubsectionEditor({ sectionId }: { sectionId: string }) {
     }
   };
 
-  const handleEdit = (index: number, newTitle: string) => {
-    const updated = [...subsections];
-    updated[index].title = newTitle;
-    setSubsections(updated);
+  const handleAddBlock = (subId: string) => {
+    setEditingSubId(subId);
+    setShowBlockEditor(true);
+  };
+
+  const handleSaveBlock = (block: Block) => {
+    setSubsections(subsections.map(sub =>
+      sub.id === editingSubId
+        ? { ...sub, blocks: [...(sub.blocks || []), block] }
+        : sub
+    ));
+    setShowBlockEditor(false);
+    setEditingSubId(null);
+  };
+
+  const handleCancelBlock = () => {
+    setShowBlockEditor(false);
+    setEditingSubId(null);
   };
 
   return (
@@ -47,17 +80,35 @@ export default function SubsectionEditor({ sectionId }: { sectionId: string }) {
         </Button>
       </div>
       <div className="space-y-4">
-        {subsections.map((subsection, i) => (
+        {subsections.map((subsection) => (
           <Card key={subsection.id} className="bg-blue-50 border-blue-100">
             <CardHeader>
               <Input
                 value={subsection.title}
-                onChange={(e) => handleEdit(i, e.target.value)}
+                readOnly
                 className="font-semibold text-blue-700"
               />
             </CardHeader>
             <CardContent>
-              <BlockEditor subsectionId={subsection.id} />
+              {/* LISTA DE BLOQUES */}
+              <div className="mb-2">
+                {(subsection.blocks || []).map((block, idx) => (
+                  <div key={idx} className="p-2 border rounded my-1">
+                    {block.type === "text"
+                      ? block.content
+                      : `Video: ${block.videoId}`}
+                  </div>
+                ))}
+              </div>
+              <Button onClick={() => handleAddBlock(subsection.id)}>
+                Agregar bloque
+              </Button>
+              {showBlockEditor && editingSubId === subsection.id && (
+                <BlockEditor
+                  onSave={handleSaveBlock}
+                  onCancel={handleCancelBlock}
+                />
+              )}
             </CardContent>
           </Card>
         ))}

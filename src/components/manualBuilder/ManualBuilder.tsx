@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default function ManualBuilder() {
   const [manualTitle, setManualTitle] = useState("");
   const [manualId, setManualId] = useState<string | null>(null);
+  const [sections, setSections] = useState<any[]>([]);
   const [mode, setMode] = useState<"builder" | "viewer" | "list">("builder");
 
   const handleCreateManual = async () => {
@@ -35,7 +36,18 @@ export default function ManualBuilder() {
   }
 
   if (mode === "viewer" && manualId) {
-    return <ManualViewer manualId={manualId} />;
+    return (
+      <>
+        <ManualViewer manualId={manualId} />
+        <Button
+          className="mt-4"
+          variant="outline"
+          onClick={() => setMode("builder")}
+        >
+          📝 Seguir editando
+        </Button>
+      </>
+    );
   }
 
   return (
@@ -60,7 +72,11 @@ export default function ManualBuilder() {
           </div>
         ) : (
           <>
-            <SectionEditor manualId={manualId} />
+            <SectionEditor
+              manualId={manualId}
+              sections={sections}
+              setSections={setSections}
+            />
             <Button
               className="mt-4"
               variant="outline"

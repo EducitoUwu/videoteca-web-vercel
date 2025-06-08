@@ -15,15 +15,12 @@ export default function ManualViewer({ manualId }: { manualId: string }) {
   return (
     <div style={{ padding: "2rem" }}>
       <h1>{manual.title}</h1>
-
       {manual.sections.map((section: any) => (
         <div key={section.id}>
           <h2>{section.title}</h2>
-
           {section.subsections.map((sub: any) => (
             <div key={sub.id} style={{ marginLeft: "1rem" }}>
               <h3>{sub.title}</h3>
-
               {sub.blocks
                 .sort((a: any, b: any) => a.order - b.order)
                 .map((block: any) => (

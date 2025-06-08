@@ -4,9 +4,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function SectionEditor({ manualId }: { manualId: string }) {
+// Define types
+interface Subsection { id: string; title: string; blocks: any[] }
+interface Section { id: string; title: string; subsections: Subsection[] }
+
+interface SectionEditorProps {
+  manualId: string;
+  sections: Section[];
+  setSections: React.Dispatch<React.SetStateAction<Section[]>>;
+}
+
+export default function SectionEditor({ manualId, sections, setSections }: SectionEditorProps) {
   const [sectionTitle, setSectionTitle] = useState("");
-  const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   const handleCreateSection = async () => {
@@ -18,7 +27,7 @@ export default function SectionEditor({ manualId }: { manualId: string }) {
         body: JSON.stringify({ title: sectionTitle, manualId }),
       });
       const data = await res.json();
-      setSections([...sections, data]);
+      setSections([...sections, { ...data, subsections: [] }]);
       setSectionTitle("");
     } catch (err) {
       console.error("Error creando sección:", err);
@@ -27,10 +36,13 @@ export default function SectionEditor({ manualId }: { manualId: string }) {
     }
   };
 
-  const handleEdit = (index: number, newTitle: string) => {
-    const updated = [...sections];
-    updated[index].title = newTitle;
-    setSections(updated);
+  // Función para actualizar subsecciones de una sección específica
+  const handleUpdateSubsections = (sectionId: string, newSubsections: Subsection[]) => {
+    setSections(sections.map(section =>
+      section.id === sectionId
+        ? { ...section, subsections: newSubsections }
+        : section
+    ));
   };
 
   return (
@@ -51,17 +63,23 @@ export default function SectionEditor({ manualId }: { manualId: string }) {
           </Button>
         </div>
         <div className="space-y-6">
-          {sections.map((section, i) => (
+          {sections.map((section) => (
             <Card key={section.id} className="bg-white border-blue-100">
               <CardHeader>
                 <Input
                   value={section.title}
-                  onChange={(e) => handleEdit(i, e.target.value)}
+                  readOnly
                   className="font-bold text-blue-800"
                 />
               </CardHeader>
               <CardContent>
-                <SubsectionEditor sectionId={section.id} />
+                <SubsectionEditor
+                  sectionId={section.id}
+                  subsections={section.subsections || []}
+                  setSubsections={(newSubsections: Subsection[]) =>
+                    handleUpdateSubsections(section.id, newSubsections)
+                  }
+                />
               </CardContent>
             </Card>
           ))}
