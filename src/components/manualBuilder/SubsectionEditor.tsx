@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
-// Define types
 interface Block { type: string; content?: string; videoId?: string }
 interface Subsection { id: string; title: string; blocks: Block[] }
 
@@ -13,8 +12,6 @@ interface SubsectionEditorProps {
   subsections: Subsection[];
   setSubsections: (newSubsections: Subsection[]) => void;
 }
-
-
 
 export default function SubsectionEditor({
   sectionId,
@@ -51,12 +48,37 @@ export default function SubsectionEditor({
     setShowBlockEditor(true);
   };
 
-  const handleSaveBlock = (block: Block) => {
-    setSubsections(subsections.map(sub =>
-      sub.id === editingSubId
-        ? { ...sub, blocks: [...(sub.blocks || []), block] }
-        : sub
-    ));
+  // ---- SOLUCIÓN COMPLETA ---
+  const handleSaveBlock = async (block: Block) => {
+    if (!editingSubId) return;
+
+    const order = subsections.find((s) => s.id === editingSubId)?.blocks.length ?? 0;
+
+    // El content debe ser texto o el ID del video, nunca undefined
+    const payload = {
+      type: block.type,
+      content: block.type === "text"
+        ? block.content
+        : block.videoId, // GUARDA el videoId como content
+      subsectionId: editingSubId,
+      order,
+    };
+
+    try {
+      const res = await fetch("http://localhost:9999/api/v1/manuals/block", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      setSubsections(subsections.map(sub =>
+        sub.id === editingSubId
+          ? { ...sub, blocks: [...(sub.blocks || []), data] }
+          : sub
+      ));
+    } catch (err) {
+      console.error("Error guardando bloque:", err);
+    }
     setShowBlockEditor(false);
     setEditingSubId(null);
   };
@@ -96,7 +118,10 @@ export default function SubsectionEditor({
                   <div key={idx} className="p-2 border rounded my-1">
                     {block.type === "text"
                       ? block.content
-                      : `Video: ${block.videoId}`}
+                      : block.content // Aquí siempre hay un ID de video (no undefined)
+                        ? `Video: ${block.content}`
+                        : <span style={{color:'red'}}>Video no definido</span>
+                    }
                   </div>
                 ))}
               </div>

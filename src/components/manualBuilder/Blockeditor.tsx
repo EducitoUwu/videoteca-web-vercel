@@ -53,7 +53,12 @@ export default function BlockEditor({
     if (type === "text") {
       onSave({ type, content });
     } else {
-      onSave({ type, videoId });
+      const video = videos.find((v) => v.id === videoId);
+      if (video) {
+        onSave({ type, content: video.url, videoId: video.id });
+      } else {
+        alert("No se encontró la url del video seleccionado");
+      }
     }
   };
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
-// Sidebar docs-style
+// Sidebar (índice de secciones y subsecciones)
 function Sidebar({
   sections,
   selectedSectionId,
@@ -31,7 +31,6 @@ function Sidebar({
             >
               {section.title}
             </button>
-            {/* subsecciones como índice */}
             {section.id === selectedSectionId && (
               <ul className="ml-2 mt-2">
                 {section.subsections.map((sub: any) => (
@@ -57,9 +56,12 @@ function Sidebar({
   );
 }
 
+// Bloque de video
 function VideoBlock({ src }: { src: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
+
+  if (!src) return null;
 
   return (
     <div className="flex flex-col items-center mb-8">
@@ -78,6 +80,7 @@ function VideoBlock({ src }: { src: string }) {
             className="object-cover rounded-xl opacity-70"
             poster="https://img.icons8.com/fluency/48/play-button-circled.png"
             muted
+            preload="metadata"
           />
           <div className="absolute inset-0 flex justify-center items-center">
             <div className="bg-white/70 rounded-full p-3 border-4 border-blue-300">
@@ -101,7 +104,8 @@ function VideoBlock({ src }: { src: string }) {
   );
 }
 
-export default function ManualViewerDocs({
+// Viewer principal
+export default function ManualViewer({
   manualId,
   onEdit,
 }: {
@@ -110,7 +114,6 @@ export default function ManualViewerDocs({
 }) {
   const [manual, setManual] = useState<any>(null);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
-  // para scroll automático
   const subsectionRefs = useRef<{ [subId: string]: HTMLDivElement | null }>({});
   const [scrollTarget, setScrollTarget] = useState<string | null>(null);
 
@@ -119,16 +122,11 @@ export default function ManualViewerDocs({
       .then((res) => res.json())
       .then((data) => {
         setManual(data);
-        console.log("MANUAL:", data);
-
-        if (data.sections?.[0]) {
-          setSelectedSectionId(data.sections[0].id);
-        }
+        if (data.sections?.[0]) setSelectedSectionId(data.sections[0].id);
       })
       .catch((err) => console.error("Error cargando manual:", err));
   }, [manualId]);
 
-  // Scroll automático al seleccionar subsección
   useEffect(() => {
     if (scrollTarget && subsectionRefs.current[scrollTarget]) {
       subsectionRefs.current[scrollTarget]!.scrollIntoView({
@@ -140,7 +138,8 @@ export default function ManualViewerDocs({
   }, [scrollTarget, manual]);
 
   const selectedSection =
-    manual?.sections?.find((s: any) => s.id === selectedSectionId) || manual?.sections?.[0];
+    manual?.sections?.find((s: any) => s.id === selectedSectionId) ||
+    manual?.sections?.[0];
 
   return (
     <div className="flex min-h-screen bg-gradient-to-tr from-blue-50 via-white to-cyan-100">
@@ -155,8 +154,13 @@ export default function ManualViewerDocs({
       {/* Main docs area */}
       <main className="flex-1 p-12 overflow-y-auto">
         <div className="flex justify-between items-center mb-10">
-          <h1 className="text-4xl font-extrabold text-blue-800 drop-shadow">{selectedSection?.title || manual?.title || "Manual"}</h1>
-          <Button onClick={onEdit} className="bg-cyan-700 hover:bg-cyan-800 text-lg px-6 py-2 rounded-xl shadow">
+          <h1 className="text-4xl font-extrabold text-blue-800 drop-shadow">
+            {selectedSection?.title || manual?.title || "Manual"}
+          </h1>
+          <Button
+            onClick={onEdit}
+            className="bg-cyan-700 hover:bg-cyan-800 text-lg px-6 py-2 rounded-xl shadow"
+          >
             📝 Seguir editando
           </Button>
         </div>
