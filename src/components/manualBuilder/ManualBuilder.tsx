@@ -35,20 +35,15 @@ export default function ManualBuilder() {
     return <ManualList onSelect={handleSelectManual} />;
   }
 
-  if (mode === "viewer" && manualId) {
-    return (
-      <>
-        <ManualViewer manualId={manualId} />
-        <Button
-          className="mt-4"
-          variant="outline"
-          onClick={() => setMode("builder")}
-        >
-          📝 Seguir editando
-        </Button>
-      </>
-    );
-  }
+if (mode === "viewer" && manualId) {
+  return (
+    <ManualViewer
+      manualId={manualId}
+      onEdit={() => setMode("builder")}
+    />
+  );
+}
+
 
   return (
     <Card className="p-6 bg-white/90 border-blue-200 shadow-lg">
