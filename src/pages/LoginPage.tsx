@@ -16,13 +16,13 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showFeatures, setShowFeatures] = useState(false);
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
 
   useEffect(() => {
-    if (user) {
+    if (!loading && user) {
       navigate('/select');
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowFeatures(true), 2000);

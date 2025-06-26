@@ -10,7 +10,8 @@ import ManualListPage from "./pages/ManualListPage";
 import UploadManualPage from "./pages/UploadManualPage";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
+  if (loading) return <div>Cargando...</div>;
   if (!user) return <Navigate to="/" />;
   return children;
 }

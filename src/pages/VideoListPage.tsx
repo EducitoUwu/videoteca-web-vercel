@@ -56,6 +56,11 @@ const VideoListPage = () => {
     return matchesCategory && matchesSearch;
   });
 
+  const handleLogout = async () => {
+    await logout();
+    navigate("/"); // Redirige al login después de cerrar sesión
+  };
+
   return (
     <div className="bg-blue-50 min-h-screen px-0 sm:px-8">
       {/* Header */}
@@ -74,16 +79,19 @@ const VideoListPage = () => {
             </Button>
           )}
           {user && (
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={logout}
-              title="Cerrar sesión"
-            >
-              <LogOut className="w-4 h-4" />
-              Cerrar sesión
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={async () => {
+              await logout();
+              navigate("/"); // Redirige al login inmediatamente después de cerrar sesión
+            }}
+            title="Cerrar sesión"
+          >
+            <LogOut className="w-4 h-4" />
+            Cerrar sesión
+          </Button>
+        )}
         </div>
       </div>
 
