@@ -6,11 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Video } from "@/types/video";
 import videoService from "@/services/video";
 import { AuthContext } from '../contexts/AuthProvider';
+
 
 const VideoListPage = () => {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -21,7 +22,7 @@ const VideoListPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [expandedVideo, setExpandedVideo] = useState<Video | null>(null);
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user, logout} = useContext(AuthContext);
  
 
   useEffect(() => {
@@ -62,16 +63,28 @@ const VideoListPage = () => {
         <h1 className="text-3xl font-bold text-blue-800 w-full sm:w-auto text-left mb-2 sm:mb-0">
           Videos Disponibles
         </h1>
-        
-        {user?.role === "admin" && <Button
-          onClick={() => navigate("/upload-video")}
-          className="gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Subir nuevo video
-        </Button>}
-        
-       
+        <div className="flex gap-2 items-center">
+          {user?.role === "admin" && (
+            <Button
+              onClick={() => navigate("/upload-video")}
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Subir nuevo video
+            </Button>
+          )}
+          {user && (
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={logout}
+              title="Cerrar sesión"
+            >
+              <LogOut className="w-4 h-4" />
+              Cerrar sesión
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Buscador */}

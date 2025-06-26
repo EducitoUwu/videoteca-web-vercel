@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,20 @@ import { Shield, BookOpen, Video, FileText, Users, CheckCircle, ArrowRight, Spar
 import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import ucnLogo from "../assets/Escudo-UCN-Full-Color.png";
+import { AuthContext } from '../contexts/AuthProvider';
 
 const LoginPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showFeatures, setShowFeatures] = useState(false);
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (user) {
+      navigate('/select');
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowFeatures(true), 2000);
@@ -30,9 +38,10 @@ const LoginPage = () => {
       const credential = await signInWithPopup(auth, provider);
       const token = await credential.user.getIdToken();
 
-      const res = await fetch("http://localhost:9999/api/v1/users/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch("http://localhost:9999/api/v1/auth/login", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+        });
 
       if (res.ok) {
         navigate('/select');
