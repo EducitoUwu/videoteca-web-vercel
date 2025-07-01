@@ -18,35 +18,41 @@ const VideoListPage = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("Todas");
   const [search, setSearch] = useState<string>("");
-  const [loading, setLoading] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedVideo, setExpandedVideo] = useState<Video | null>(null);
   const navigate = useNavigate();
-  const { user, logout} = useContext(AuthContext);
+  const { user, logout, loading } = useContext(AuthContext);
+
+  // Redirigir al login si no hay usuario y terminó de cargar
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/");
+    }
+  }, [user, loading, navigate]);
  
 
   useEffect(() => {
     const fetchVideos = async () => {
-      setLoading(true);
+      setLocalLoading(true);
       try {
         const data = await videoService.fetchAllVideos();
         setVideos(data);
-
         const uniqueCategories = Array.from(
-          new Set(data.map((video) => video.category?.name || "Sin categoría"))
+          new Set((data as any[]).map((video) => (video.category?.name || "Sin categoría") as string))
         );
         setCategories(["Todas", ...uniqueCategories]);
       } catch (err) {
         setError("No se pudieron cargar los videos.");
       } finally {
-        setLoading(false);
+        setLocalLoading(false);
       }
     };
     fetchVideos();
   }, []);
 
   // Filtrado combinado por categoría y búsqueda
-  const filteredVideos = videos.filter((video) => {
+  const filteredVideos = videos.filter((video: any) => {
     const matchesCategory =
       selectedCategory === "Todas" ||
       (video.category?.name || "Sin categoría") === selectedCategory;
@@ -56,10 +62,7 @@ const VideoListPage = () => {
     return matchesCategory && matchesSearch;
   });
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/"); // Redirige al login después de cerrar sesión
-  };
+  // handleLogout eliminado (no se usaba)
 
   return (
     <div className="bg-blue-50 min-h-screen px-0 sm:px-8">
@@ -161,7 +164,7 @@ const VideoListPage = () => {
         </Select>
       </div>
 
-      {loading && (
+      {(loading || localLoading) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 px-4">
           {[...Array(4)].map((_, i) => (
             <Skeleton key={i} className="h-40 rounded-xl" />

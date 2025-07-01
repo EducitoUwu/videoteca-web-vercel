@@ -18,11 +18,14 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const { user, loading } = useContext(AuthContext);
 
-  useEffect(() => {
-    if (!loading && user) {
-      navigate('/select');
-    }
-  }, [user, loading, navigate]);
+useEffect(() => {
+  if (!loading && user) {
+    navigate('/select');
+  } else if (!loading && !user) {
+    // Si no hay usuario y ya terminó de cargar, forzar login
+    navigate('/');
+  }
+}, [user, loading, navigate]);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowFeatures(true), 2000);

@@ -1,13 +1,21 @@
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Video, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+import { AuthContext } from '../contexts/AuthProvider';
 const SelectionPage = () => {
   const [selected, setSelected] = useState<"manual" | "video" | null>(null);
   const navigate = useNavigate();
+  const { user, loading } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/");
+    }
+  }, [user, loading, navigate]);
 
   const handleContinue = () => {
     if (selected === "manual") navigate("/manuals");
