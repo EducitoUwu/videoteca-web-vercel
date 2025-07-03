@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { backendAuthFetch } from "@/lib/utils";
 
 interface Manual {
   id: string;
@@ -20,7 +21,7 @@ export default function ManualList({ onSelect }: ManualListProps) {
 
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:9999/api/v1/manuals")
+    backendAuthFetch("http://localhost:9999/api/v1/manuals")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setManuals(data);

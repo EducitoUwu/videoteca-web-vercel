@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { backendAuthFetch } from "@/lib/utils";
 
 export const createManualSubsection = async (data: {
   section: string;
@@ -6,5 +6,15 @@ export const createManualSubsection = async (data: {
   description: string;
   position: 'before' | 'after';
 }) => {
-    return await axios.post('http://localhost:5555/api/v1/manual/subsection', data);
+  const response = await backendAuthFetch(
+    'http://localhost:5555/api/v1/manual/subsection',
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
+  return await response.json();
 };

@@ -5,6 +5,7 @@ import ManualViewer from "./ManualViewer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { backendAuthFetch } from "@/lib/utils";
 
 export default function ManualBuilder() {
   const [manualTitle, setManualTitle] = useState("");
@@ -14,9 +15,11 @@ export default function ManualBuilder() {
 
   const handleCreateManual = async () => {
     try {
-      const res = await fetch("http://localhost:9999/api/v1/manuals", {
+      const res = await backendAuthFetch ("http://localhost:9999/api/v1/manuals", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ title: manualTitle }),
       });
       const data = await res.json();

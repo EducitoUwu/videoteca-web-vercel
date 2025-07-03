@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { backendAuthFetch } from "@/lib/utils";
+
+
 
 interface Block {
   id?: string;
@@ -38,7 +41,7 @@ export default function BlockEditor({
   const handleOpenVideoSelector = () => {
     setShowVideoSelector(true);
     setLoadingVideos(true);
-    fetch("http://localhost:9999/api/v1/videos")
+    backendAuthFetch("http://localhost:9999/api/v1/videos")
       .then(res => res.json())
       .then(data => setVideos(Array.isArray(data) ? data : data.data))
       .finally(() => setLoadingVideos(false));

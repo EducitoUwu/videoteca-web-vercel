@@ -3,6 +3,7 @@ import SubsectionEditor from "./SubsectionEditor";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { backendAuthFetch } from "@/lib/utils";
 
 // Define types
 interface Subsection { id: string; title: string; blocks: any[] }
@@ -21,7 +22,7 @@ export default function SectionEditor({ manualId, sections, setSections }: Secti
   const handleCreateSection = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:9999/api/v1/manuals/section", {
+      const res = await backendAuthFetch("http://localhost:9999/api/v1/manuals/section", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: sectionTitle, manualId }),

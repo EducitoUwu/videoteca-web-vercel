@@ -3,6 +3,7 @@ import BlockEditor from "./Blockeditor";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { backendAuthFetch } from "@/lib/utils";
 
 interface Block { type: string; content?: string; videoId?: string }
 interface Subsection { id: string; title: string; blocks: Block[] }
@@ -28,7 +29,7 @@ export default function SubsectionEditor({
   const handleCreate = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:9999/api/v1/manuals/subsection", {
+      const res = await backendAuthFetch("http://localhost:9999/api/v1/manuals/subsection", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, sectionId }),
@@ -65,7 +66,7 @@ export default function SubsectionEditor({
     };
 
     try {
-      const res = await fetch("http://localhost:9999/api/v1/manuals/block", {
+      const res = await backendAuthFetch("http://localhost:9999/api/v1/manuals/block", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

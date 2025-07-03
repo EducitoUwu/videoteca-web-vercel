@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { backendAuthFetch } from "@/lib/utils";
 
 // Sidebar (índice de secciones y subsecciones)
 function Sidebar({
@@ -118,7 +119,7 @@ export default function ManualViewer({
   const [scrollTarget, setScrollTarget] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`http://localhost:9999/api/v1/manuals/${manualId}`)
+    backendAuthFetch(`http://localhost:9999/api/v1/manuals/${manualId}`)
       .then((res) => res.json())
       .then((data) => {
         setManual(data);
