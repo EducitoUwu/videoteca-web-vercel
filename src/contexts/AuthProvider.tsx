@@ -4,7 +4,7 @@ import { auth } from "../firebaseConfig";
 
 
 interface BackendUser {
-  id: number;
+  id: string; 
   email: string;
   fullName: string;
   role: "admin" | "user" | "estudiante";
