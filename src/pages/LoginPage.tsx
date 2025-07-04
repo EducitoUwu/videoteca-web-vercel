@@ -60,10 +60,10 @@ useEffect(() => {
   };
 
   const features = [
-    { icon: Video, text: "Videos de procedimientos clínicos", color: "bg-blue-400 text-blue-700" },
-    { icon: FileText, text: "Manuales digitales actualizados", color: "bg-green-400 text-green-700" },
-    { icon: BookOpen, text: "Recursos de aprendizaje", color: "bg-purple-400 text-purple-700" },
-    { icon: Users, text: "Colaboración estudiante-docente", color: "bg-orange-400 text-orange-700" }
+    { icon: Video, text: "Videos de procedimientos clínicos", color: "bg-blue-500/20 text-blue-300" },
+    { icon: FileText, text: "Manuales digitales actualizados", color: "bg-cyan-500/20 text-cyan-300" },
+    { icon: BookOpen, text: "Recursos de aprendizaje", color: "bg-indigo-500/20 text-indigo-300" },
+    { icon: Users, text: "Colaboración estudiante-docente", color: "bg-purple-500/20 text-purple-300" }
   ];
 
 
@@ -72,55 +72,72 @@ useEffect(() => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-400 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-slate-800 to-black relative overflow-hidden">
       
+      {/* Efectos de fondo más sutiles */}
+      <div className="absolute inset-0">
+        {/* Gradiente circular sutil */}
+        <div className="absolute top-20 -left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 -right-20 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>
+      </div>
       
-      {/* Patrón de fondo */}
-      <div className="absolute inset-0 opacity-10" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.3'%3E%3Ccircle cx='7' cy='7' r='3'/%3E%3Ccircle cx='53' cy='7' r='3'/%3E%3Ccircle cx='30' cy='30' r='3'/%3E%3Ccircle cx='7' cy='53' r='3'/%3E%3Ccircle cx='53' cy='53' r='3'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+      {/* Patrón de puntos */}
+      <div className="absolute inset-0 opacity-20" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='7' cy='7' r='1'/%3E%3Ccircle cx='53' cy='7' r='1'/%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3Ccircle cx='7' cy='53' r='1'/%3E%3Ccircle cx='53' cy='53' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+      }}></div>
+
+      {/* Grid de líneas */}
+      <div className="absolute inset-0 opacity-5" style={{
+        backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)`,
+        backgroundSize: '50px 50px'
       }}></div>
 
       <div className="relative z-10 w-full max-w-6xl mx-4 grid lg:grid-cols-2 gap-8 items-center">
         {/* Panel izquierdo - Información */}
-        <div className="hidden lg:block text-white space-y-6">
-          <div className="space-y-4">
-            <Badge className="bg-white/20 text-white border-white/30 px-4 py-2 text-sm font-medium">
-              <Sparkles className="w-4 h-4 mr-2" />
+        <div className="hidden lg:block text-white space-y-8">
+          <div className="space-y-6">
+            <Badge className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-cyan-300 border-blue-400/30 px-6 py-3 text-sm font-semibold backdrop-blur-sm">
+              <Sparkles className="w-5 h-5 mr-2 text-cyan-400" />
               Plataforma Educativa UCN
             </Badge>
-            <h1 className="text-5xl font-bold leading-tight">
-              Videoteca de
-              <span className="block text-cyan-200">Enfermería UCN</span>
+            <h1 className="text-6xl font-black leading-tight">
+              <span className="bg-gradient-to-r from-white via-blue-100 to-cyan-300 bg-clip-text text-transparent">
+                Videoteca de
+              </span>
+              <span className="block bg-gradient-to-r from-cyan-300 via-blue-300 to-indigo-300 bg-clip-text text-transparent">
+                Enfermería UCN
+              </span>
             </h1>
-            <p className="text-xl text-blue-100 max-w-md">
-              Tu plataforma integral de recursos educativos para la excelencia en enfermería
+            <p className="text-xl text-gray-300 max-w-md leading-relaxed">
+              Tu plataforma integral de recursos educativos para la 
+              <span className="text-cyan-300 font-semibold"> excelencia en enfermería</span>
             </p>
           </div>
 
-          {/* Características animadas */}
-          <div className="space-y-3">
+          {/* Características animadas con mejor diseño */}
+          <div className="space-y-4">
             {features.map((feature, index) => (
               <div
                 key={index}
-                className={`flex items-center gap-3 p-3 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 transition-all duration-500 transform ${
+                className={`flex items-center gap-4 p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-blue-400/30 transition-all duration-500 transform hover:scale-105 ${
                   showFeatures 
                     ? 'translate-x-0 opacity-100' 
                     : '-translate-x-10 opacity-0'
                 }`}
-                style={{ transitionDelay: `${index * 100}ms` }}
+                style={{ transitionDelay: `${index * 150}ms` }}
               >
-                <div className={`p-2 rounded-lg ${feature.color} bg-opacity-20`}>
-                  <feature.icon className="w-5 h-5 text-white" />
+                <div className={`p-3 rounded-xl ${feature.color} backdrop-blur-sm border border-white/10`}>
+                  <feature.icon className="w-6 h-6" />
                 </div>
-                <span className="text-white font-medium">{feature.text}</span>
-                <CheckCircle className="w-4 h-4 text-green-300 ml-auto" />
+                <span className="text-gray-200 font-medium text-lg flex-1">{feature.text}</span>
+                <CheckCircle className="w-5 h-5 text-cyan-400" />
               </div>
             ))}
           </div>
 
-          <div className="flex items-center gap-2 text-cyan-200">
-            <Shield className="w-5 h-5" />
-            <span className="text-sm">Acceso seguro y verificado</span>
+          <div className="flex items-center gap-3 text-cyan-300 bg-blue-500/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-blue-400/20">
+            <Shield className="w-6 h-6" />
+            <span className="font-medium">Acceso seguro y verificado</span>
           </div>
         </div>
 
@@ -137,87 +154,81 @@ useEffect(() => {
 
 
         <div className="w-full max-w-md mx-auto">
-          <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-lg">
-            <CardHeader className="text-center space-y-4">
-              {/* Logo con efecto hover */}
+          <Card className="shadow-2xl border-0 bg-gray-900/90 backdrop-blur-2xl ring-1 ring-white/10">
+            <CardHeader className="text-center space-y-6 pb-8">
+              {/* Logo con efecto más sutil */}
               <div className="flex justify-center">
                 <div className="relative group">
-                  <div className="absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                  <div className="absolute inset-0 bg-blue-500/30 rounded-full blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-300"></div>
                   <img
                     src={ucnLogo}
-                    
                     alt="Logo UCN"
-                    className="relative h-20 w-20 rounded-full border-4 border-blue-200 bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg transform group-hover:scale-110 transition-transform duration-300"
+                    className="relative h-24 w-24 rounded-full border-4 border-blue-400/50 bg-gradient-to-br from-blue-500 to-cyan-600 shadow-2xl transform group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <CardTitle className="text-2xl font-bold text-gray-800">
+              <div className="space-y-3">
+                <CardTitle className="text-3xl font-black bg-gradient-to-r from-white via-blue-100 to-cyan-300 bg-clip-text text-transparent">
                   ¡Bienvenido!
                 </CardTitle>
-                <p className="text-gray-600">
+                <p className="text-gray-300 text-lg">
                   Accede a tu videoteca de enfermería
                 </p>
               </div>
 
-              
-              <div className="flex items-center justify-center gap-2 text-sm text-blue-600 bg-blue-50 rounded-full px-4 py-2">
-                <Shield className="w-4 h-4" />
-                Solo correos institucionales UCN
+              <div className="flex items-center justify-center gap-3 text-sm text-cyan-300 bg-blue-500/10 backdrop-blur-sm rounded-xl px-6 py-3 border border-blue-400/20">
+                <Shield className="w-5 h-5" />
+                <span className="font-semibold">Solo correos institucionales UCN</span>
               </div>
             </CardHeader>
 
-            <CardContent className="space-y-4">
-              
-
+            <CardContent className="space-y-6 pt-0">
               {error && (
-                <Alert className="border-red-200 bg-red-50">
-                  <Shield className="h-4 w-4 text-red-600" />
-                  <AlertDescription className="text-red-700 font-medium">
+                <Alert className="border-red-400/30 bg-red-500/10 backdrop-blur-sm">
+                  <Shield className="h-5 w-5 text-red-400" />
+                  <AlertDescription className="text-red-300 font-medium">
                     {error}
                   </AlertDescription>
                 </Alert>
               )}
 
-              
-              {/* Boton de google */}
+              {/* Botón de Google más limpio */}
               <Button
                 variant="outline"
-                className="w-full h-14 border-2 border-blue-300 hover:border-blue-400 hover:bg-blue-50 group relative overflow-hidden transition-all duration-300"
+                className="w-full h-16 border-2 border-blue-400/30 bg-gray-800/50 hover:bg-blue-500/10 hover:border-blue-400/50 group relative overflow-hidden transition-all duration-300 backdrop-blur-sm"
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={isLoading}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                <div className="flex items-center justify-center gap-3 relative z-10">
+                <div className="flex items-center justify-center gap-4 relative z-10">
                   {isLoading ? (
-                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-7 h-7 border-3 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
                   ) : (
-                    <FcGoogle className="w-6 h-6" />
+                    <FcGoogle className="w-7 h-7" />
                   )}
-                  <span className="text-lg font-semibold text-gray-700">
+                  <span className="text-xl font-bold text-gray-200 group-hover:text-white transition-colors">
                     {isLoading ? 'Iniciando sesión...' : 'Continuar con Google UCN'}
                   </span>
                   {!isLoading && (
-                    <ArrowRight className="w-5 h-5 text-blue-500 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-6 h-6 text-blue-400 group-hover:translate-x-1 group-hover:text-cyan-400 transition-all duration-300" />
                   )}
                 </div>
               </Button>
-
-              
             </CardContent>
           </Card>
 
-          {/* features animadasnn */}
-          <div className="lg:hidden mt-6 space-y-3">
+          {/* Features para móvil con nuevo diseño */}
+          <div className="lg:hidden mt-8 space-y-4">
             {features.slice(0, 2).map((feature, index) => (
               <div
                 key={index}
-                className="flex items-center gap-3 p-3 rounded-lg bg-white/10 backdrop-blur-sm text-white"
+                className="flex items-center gap-4 p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-gray-200"
               >
-                <feature.icon className="w-5 h-5" />
-                <span className="text-sm font-medium">{feature.text}</span>
+                <div className={`p-2 rounded-lg ${feature.color} backdrop-blur-sm border border-white/10`}>
+                  <feature.icon className="w-5 h-5" />
+                </div>
+                <span className="font-medium">{feature.text}</span>
               </div>
             ))}
           </div>
