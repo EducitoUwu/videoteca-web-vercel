@@ -1,24 +1,24 @@
-import { useEffect, useState,useContext } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Plus, Search, LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Video } from "@/types/video";
-import videoService from "@/services/video";
+import { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Skeleton } from '../components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
+import { Search, Plus, LogOut } from 'lucide-react';
 import { AuthContext } from '../contexts/AuthProvider';
-
+import { Video } from '../types/video';
+import videoService from '../services/video';
+import Header from '../components/Header';
 
 const VideoListPage = () => {
   const [videos, setVideos] = useState<Video[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("Todas");
   const [search, setSearch] = useState<string>("");
-  const [localLoading, setLocalLoading] = useState(false);
+  const [localLoading, setLocalLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedVideo, setExpandedVideo] = useState<Video | null>(null);
   const navigate = useNavigate();
@@ -65,8 +65,10 @@ const VideoListPage = () => {
   // handleLogout eliminado (no se usaba)
 
   return (
+    
+    
     <div className="bg-blue-50 min-h-screen px-0 sm:px-8">
-      {/* Header */}
+      <Header />
       <div className="flex flex-col sm:flex-row items-center justify-between pt-8 pb-4 px-4 sm:px-0 gap-4">
         <h1 className="text-3xl font-bold text-blue-800 w-full sm:w-auto text-left mb-2 sm:mb-0">
           Videos Disponibles
@@ -81,20 +83,7 @@ const VideoListPage = () => {
               Subir nuevo video
             </Button>
           )}
-          {user && (
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={async () => {
-              await logout();
-              navigate("/"); // Redirige al login inmediatamente después de cerrar sesión
-            }}
-            title="Cerrar sesión"
-          >
-            <LogOut className="w-4 h-4" />
-            Cerrar sesión
-          </Button>
-        )}
+          
         </div>
       </div>
 

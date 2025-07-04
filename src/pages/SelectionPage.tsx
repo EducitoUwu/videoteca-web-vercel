@@ -4,6 +4,7 @@ import { BookOpen, Video, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import Header from "@/components/Header";
 
 import { AuthContext } from '../contexts/AuthProvider';
 const SelectionPage = () => {
@@ -24,6 +25,7 @@ const SelectionPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 via-blue-300 to-blue-100 flex flex-col items-center justify-center p-4">
+      <Header />
       <div className="w-full max-w-4xl mx-auto text-center mb-10">
         <h1 className="text-3xl md:text-4xl font-bold text-blue-800 mb-4">
           ¿Qué deseas visualizar?
