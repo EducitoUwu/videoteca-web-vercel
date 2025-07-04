@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { backendAuthFetch } from "../lib/utils";
 
 
 const VideoUpload = () => {
@@ -25,8 +25,9 @@ const VideoUpload = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('http://localhost:9999/api/v1/categories');
-        setCategories(response.data);
+        const response = await backendAuthFetch('http://localhost:9999/api/v1/categories');
+        const data = await response.json();
+        setCategories(data.data || data);
       } catch (error) {
         console.error('Error loading categories:', error);
       }
@@ -56,10 +57,17 @@ const VideoUpload = () => {
 
       let categoryId = selectedCategory;
       if (!selectedCategory && newCategory.trim() !== '') {
-        const response = await axios.post('http://localhost:9999/api/v1/categories', {
-          name: newCategory,
+        const response = await backendAuthFetch('http://localhost:9999/api/v1/categories', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: newCategory,
+          }),
         });
-        categoryId = response.data.id;
+        const data = await response.json();
+        categoryId = data.data?.id || data.id;
       }
 
       const formData = new FormData();
@@ -68,24 +76,42 @@ const VideoUpload = () => {
       formData.append('description', description);
       if (categoryId) formData.append('categoryId', categoryId);
 
-      const response = await axios.post(
-        "http://localhost:9999/api/v1/videos/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / (progressEvent.total || 1)
-            );
+      // Usar XMLHttpRequest para poder trackear el progreso de upload
+      const uploadPromise = new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', (e: ProgressEvent) => {
+          if (e.lengthComputable) {
+            const percentCompleted = Math.round((e.loaded * 100) / e.total);
             setProgress(percentCompleted);
-          },
-        }
-      );
+          }
+        });
 
-      setVideoUrl(response.data.data.fileUrl);
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              resolve(response);
+            } catch (error) {
+              reject(new Error('Error parsing response'));
+            }
+          } else {
+            reject(new Error(`HTTP Error: ${xhr.status}`));
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          reject(new Error('Network error'));
+        });
+
+        const token = localStorage.getItem("accessToken");
+        xhr.open('POST', 'http://localhost:9999/api/v1/videos/upload');
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        xhr.send(formData);
+      });
+
+      const response: any = await uploadPromise;
+      setVideoUrl(response.data.fileUrl);
     } catch (error) {
       console.error('Error uploading video:', error);
       setError('Failed to upload video');

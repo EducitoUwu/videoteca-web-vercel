@@ -7,7 +7,7 @@ interface BackendUser {
   id: string; 
   email: string;
   fullName: string;
-  role: "admin" | "user" | "estudiante";
+  role: "administrador" | "user" | "estudiante";
 }
 
 interface AuthContextType {

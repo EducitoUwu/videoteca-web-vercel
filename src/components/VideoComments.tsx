@@ -77,7 +77,7 @@ const VideoComments = ({ videoId }: VideoCommentsProps) => {
   };
 
   const canDeleteComment = (comment: VideoComment) => {
-    return user && (user.role === 'admin' || user.id === comment.userId);
+    return user && (user.role === 'administrador' || user.id === comment.userId);
   };
 
   const getRoleBadgeStyle = (role: string) => {

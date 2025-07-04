@@ -65,8 +65,22 @@ const VideoListPage = () => {
   });
 
   return (
-    <div className="bg-blue-50 min-h-screen px-0 sm:px-8">
+    <div className="bg-blue-50 min-h-screen px-0 sm:px-8 relative">
       <Header />
+      
+      {/* Botón flotante para admins */}
+      {user?.role === "administrador" && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <Button 
+            onClick={() => navigate("/upload-video")}
+            className="w-14 h-14 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110"
+            title="Subir nuevo video"
+          >
+            <Plus className="w-6 h-6" />
+            
+          </Button>
+        </div>
+      )}
       
       {!expandedVideo && (
         <>
@@ -75,15 +89,7 @@ const VideoListPage = () => {
               Videos Disponibles
             </h1>
             <div className="flex gap-2 items-center">
-              {user?.role === "admin" && (
-                <Button
-                  onClick={() => navigate("/upload-video")}
-                  className="gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Subir nuevo video
-                </Button>
-              )}
+              
             </div>
           </div>
 
