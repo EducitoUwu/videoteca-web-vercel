@@ -1,4 +1,3 @@
-import axios from "axios";
 import { backendAuthFetch } from "@/lib/utils";
 
 const fetchAllVideos = async () => {
