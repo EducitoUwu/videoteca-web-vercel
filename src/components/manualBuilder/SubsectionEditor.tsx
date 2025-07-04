@@ -5,7 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { backendAuthFetch } from "@/lib/utils";
 
-interface Block { type: string; content?: string; videoId?: string }
+interface Block {
+  id?: string;
+  type: string;
+  content?: string;
+  videoId?: string;
+}
 interface Subsection { id: string; title: string; blocks: Block[] }
 
 interface SubsectionEditorProps {
@@ -115,17 +120,45 @@ export default function SubsectionEditor({
             <CardContent>
               {/* LISTA DE BLOQUES */}
               <div className="mb-2">
-                {(subsection.blocks || []).map((block, idx) => (
-                  <div key={idx} className="p-2 border rounded my-1">
-                    {block.type === "text"
-                      ? block.content
-                      : block.content // Aquí siempre hay un ID de video (no undefined)
-                        ? `Video: ${block.content}`
-                        : <span style={{color:'red'}}>Video no definido</span>
-                    }
-                  </div>
-                ))}
-              </div>
+              {(subsection.blocks || []).map((block, idx) => (
+                <div key={block.id || idx} className="p-2 border rounded my-1 flex items-center gap-2">
+                  {block.type === "text" ? (
+                    <>
+                      <input
+                        className="border rounded px-2 py-1 flex-1"
+                        value={block.content}
+                        onChange={e => {
+                          // Editar localmente para feedback inmediato
+                          const newBlocks = subsection.blocks.map((b, bidx) =>
+                            bidx === idx ? { ...b, content: e.target.value } : b
+                          );
+                          setSubsections(subsections.map(s =>
+                            s.id === subsection.id ? { ...s, blocks: newBlocks } : s
+                          ));
+                        }}
+                        onBlur={async (e) => {
+                          // Guardar en backend al salir del input
+                          try {
+                            await backendAuthFetch(`http://localhost:9999/api/v1/manuals/block/${block.id}`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ content: e.target.value }),
+                            });
+                          } catch (err) {
+                            alert("Error guardando el bloque");
+                          }
+                        }}
+                      />
+                    </>
+                  ) : (
+                    block.content
+                      ? `Video: ${block.content}`
+                      : <span style={{ color: 'red' }}>Video no definido</span>
+                  )}
+                </div>
+              ))}
+            </div>
+
               <Button onClick={() => handleAddBlock(subsection.id)}>
                 Agregar bloque
               </Button>

@@ -9,12 +9,12 @@ interface Manual {
   title: string;
 }
 
-// Permite onSelect opcional, para máxima compatibilidad
 interface ManualListProps {
   onSelect?: (id: string) => void;
+  onNewManual?: () => void;
 }
 
-export default function ManualList({ onSelect }: ManualListProps) {
+export default function ManualList({ onSelect, onNewManual }: ManualListProps) {
   const [manuals, setManuals] = useState<Manual[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -47,6 +47,7 @@ export default function ManualList({ onSelect }: ManualListProps) {
 
   return (
     <div className="space-y-4">
+      <h2 className="font-bold text-lg mb-4">Manuales disponibles</h2>
       {manuals.length > 0 ? (
         manuals.map((manual) => (
           <Card
@@ -66,9 +67,12 @@ export default function ManualList({ onSelect }: ManualListProps) {
       )}
 
       <div className="flex justify-center mt-6">
-        <Button onClick={() => navigate("/upload-manual")} className="bg-blue-600 hover:bg-blue-700">
-          + Subir Nuevo Manual
-        </Button>
+            <Button
+      onClick={() => navigate("/upload-manual")}
+      className="bg-blue-600 hover:bg-blue-700"
+    >
+      + Subir Nuevo Manual
+    </Button>
       </div>
     </div>
   );

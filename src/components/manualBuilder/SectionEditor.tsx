@@ -68,10 +68,26 @@ export default function SectionEditor({ manualId, sections, setSections }: Secti
             <Card key={section.id} className="bg-white border-blue-100">
               <CardHeader>
                 <Input
-                  value={section.title}
-                  readOnly
-                  className="font-bold text-blue-800"
-                />
+                value={section.title}
+                onChange={e => {
+                  const newTitle = e.target.value;
+                  setSections(sections.map(s =>
+                    s.id === section.id ? { ...s, title: newTitle } : s
+                  ));
+                }}
+                onBlur={async e => {
+                  try {
+                    await backendAuthFetch(`http://localhost:9999/api/v1/manuals/section/${section.id}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ title: e.target.value }),
+                    });
+                  } catch (err) {
+                    console.error("Error actualizando sección:", err);
+                  }
+                }}
+                className="font-bold text-blue-800"
+              />
               </CardHeader>
               <CardContent>
                 <SubsectionEditor
