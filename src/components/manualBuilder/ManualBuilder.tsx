@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import SectionEditor from "./SectionEditor";
-import ManualViewer from "./ManualViewer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { backendAuthFetch } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
-import { Plus, BookOpen, Eye, Save, ArrowLeft } from "lucide-react";
+import { Plus, BookOpen, Save, ArrowLeft } from "lucide-react";
 
 interface ManualBuilderProps {
   editId?: string | null;
@@ -16,7 +15,6 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
   const [manualTitle, setManualTitle] = useState("");
   const [manualId, setManualId] = useState<string | null>(null);
   const [sections, setSections] = useState<any[]>([]);
-  const [mode, setMode] = useState<"builder" | "viewer">("builder");
   const [loading, setLoading] = useState(false);
   const [loadingExisting, setLoadingExisting] = useState(false);
   const navigate = useNavigate();
@@ -41,7 +39,6 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
       setManualId(id);
       setManualTitle(manual.title || "");
       setSections(manual.sections || []);
-      setMode("builder");
     } catch (err) {
       console.error("Error cargando manual:", err);
       alert("Error al cargar el manual. Será redirigido al listado.");
@@ -73,7 +70,6 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
       
       setManualId(manualId);
       setSections([]);
-      setMode("builder");
       setManualTitle("");
       
       // Fetch estructura real del manual recién creado
@@ -106,24 +102,10 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
   };
 
 
-  // Cambiar a viewer después de construir
-  const handleViewManual = () => {
-    setMode("viewer");
-  };
-
   // Volver al listado después de guardar/salir
   const handleBackToList = () => {
     navigate("/manuals");
   };
-
-  if (mode === "viewer" && manualId) {
-    return (
-      <ManualViewer
-        manualId={manualId}
-        onEdit={() => setMode("builder")}
-      />
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
@@ -204,15 +186,6 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
                   >
                     <Save className="h-5 w-5 mr-2" />
                     Guardar manual y salir
-                  </Button>
-                  
-                  <Button
-                    onClick={handleViewManual}
-                    variant="outline"
-                    className="border-blue-500/30 text-blue-300 hover:bg-blue-500/10 hover:text-blue-200 font-semibold px-6 py-3 rounded-lg transition-all duration-300"
-                  >
-                    <Eye className="h-5 w-5 mr-2" />
-                    Ver este manual
                   </Button>
                 </div>
               </div>

@@ -16,7 +16,7 @@ interface Block {
 interface Video {
   id: string;
   title: string;
-  url: string;
+  fileUrl: string; // Cambiar de 'url' a 'fileUrl'
 }
 
 export default function BlockEditor({
@@ -49,29 +49,31 @@ export default function BlockEditor({
   };
 
   const handleSelectVideo = (vid: Video) => {
+    console.log('Video seleccionado:', vid);
     setVideoId(vid.id);
+    setContent(vid.fileUrl); // Actualizar el contenido con la URL del video
+    console.log('Estableciendo content a:', vid.fileUrl);
     setShowVideoSelector(false);
   };
 
   const handleSave = () => {
+    console.log('Estado actual:', { type, content, videoId });
+    
     if (type === "text") {
       if (!content.trim()) {
         alert("El contenido del texto no puede estar vacío");
         return;
       }
       onSave({ type, content: content.trim() });
-    } else {
-      if (!videoId) {
+    } else if (type === "video") {
+      if (!videoId || !content) {
+        console.log('Validación fallida:', { videoId, content });
         alert("Debes seleccionar un video");
         return;
       }
-      const video = videos.find((v) => v.id === videoId);
-      if (video) {
-        // Para bloques de video, el contenido debe ser la URL del video
-        onSave({ type, content: video.url, videoId: video.id });
-      } else {
-        alert("No se encontró la url del video seleccionado");
-      }
+      // Para bloques de video, content ya contiene la URL del video
+      console.log('Guardando bloque de video:', { type, content, videoId });
+      onSave({ type, content, videoId });
     }
   };
 
@@ -133,6 +135,9 @@ export default function BlockEditor({
                   <p className="text-purple-300 text-sm">
                     {videos.find(v => v.id === videoId)?.title || videoId}
                   </p>
+                  <p className="text-purple-400 text-xs">
+                    URL: {content || 'No disponible'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -167,13 +172,13 @@ export default function BlockEditor({
                       videos.map(video => (
                         <div key={video.id} className="flex items-center gap-4 p-4 bg-purple-500/5 rounded-lg border border-purple-500/20 hover:border-purple-400/40 transition-all duration-300">
                           <video 
-                            src={video.url} 
+                            src={video.fileUrl} 
                             className="w-32 h-20 object-cover rounded-lg border border-purple-500/30" 
                             preload="metadata"
                           />
                           <div className="flex-1 min-w-0">
                             <h3 className="text-purple-200 font-medium truncate">{video.title}</h3>
-                            <p className="text-purple-400 text-sm truncate">{video.url}</p>
+                            <p className="text-purple-400 text-sm truncate">{video.fileUrl}</p>
                           </div>
                           <Button 
                             onClick={() => handleSelectVideo(video)}

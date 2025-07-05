@@ -109,9 +109,19 @@ export default function SubsectionEditor({
 
     const order = subsections.find((s) => s.id === editingSubId)?.blocks.length ?? 0;
 
+    // Validar que el contenido no esté vacío
+    if (!block.content || block.content.trim() === "") {
+      if (block.type === "video") {
+        alert("Error: No se pudo obtener la URL del video seleccionado. Intenta seleccionar el video nuevamente.");
+      } else {
+        alert("El contenido del bloque no puede estar vacío");
+      }
+      return;
+    }
+
     const payload = {
       type: block.type,
-      content: block.content || "", // Usar siempre block.content
+      content: block.content.trim(), // Asegurar que no esté vacío
       subsectionId: editingSubId,
       order, // El backend requiere este campo
     };
