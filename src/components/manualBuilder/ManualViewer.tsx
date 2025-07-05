@@ -85,6 +85,8 @@ function ModernSidebar({
   const [newItemTitle, setNewItemTitle] = useState('');
   const { user } = useContext(AuthContext);
 
+  const isAdmin = user?.role === "administrador";
+
   const toggleSection = (sectionId: string) => {
     const newExpanded = new Set(expandedSections);
     if (newExpanded.has(sectionId)) {
@@ -214,7 +216,7 @@ function ModernSidebar({
             ) : (
               <div className="flex items-center gap-2">
                 <h2 className="font-bold text-white truncate">{manual.title}</h2>
-                {editMode && (
+                {editMode && isAdmin && (
                   <Button
                     size="sm"
                     variant="ghost"
@@ -285,7 +287,7 @@ function ModernSidebar({
                   )}
                 </div>
 
-                {editMode && editingItem?.type !== 'section' && (
+                {editMode && isAdmin && editingItem?.type !== 'section' && (
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       size="sm"
@@ -354,7 +356,7 @@ function ModernSidebar({
                       )}
                     </div>
 
-                    {editMode && editingItem?.type !== 'subsection' && (
+                    {editMode && isAdmin && editingItem?.type !== 'subsection' && (
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
                           size="sm"
@@ -569,6 +571,7 @@ export default function ManualViewer({
   const [newBlockType, setNewBlockType] = useState<'text' | 'video'>('text');
   
   const { user } = useContext(AuthContext);
+  const isAdmin = user?.role === "administrador";
   const subsectionRefs = useRef<{ [subId: string]: HTMLDivElement | null }>({});
 
   // Cargar manual
@@ -756,7 +759,7 @@ export default function ManualViewer({
             </div>
             
             <div className="flex items-center gap-3">
-              {user?.role === 'administrador' && (
+              {isAdmin && (
                 <Button
                   onClick={() => setEditMode(!editMode)}
                   variant={editMode ? "default" : "outline"}
@@ -769,7 +772,7 @@ export default function ManualViewer({
                   {editMode ? 'Vista previa' : 'Modo edición'}
                 </Button>
               )}
-              {onEdit && (
+              {onEdit && isAdmin && (
                 <Button
                   onClick={onEdit}
                   className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"

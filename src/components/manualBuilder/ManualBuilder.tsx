@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import SectionEditor from "./SectionEditor";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { backendAuthFetch } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { Plus, BookOpen, Save, ArrowLeft } from "lucide-react";
+import { AuthContext } from "@/contexts/AuthProvider";
+import Header from "@/components/Header";
 
 interface ManualBuilderProps {
   editId?: string | null;
@@ -17,7 +19,18 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingExisting, setLoadingExisting] = useState(false);
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const isAdmin = user?.role === "administrador";
+
+  // Redirigir si no es administrador
+  useEffect(() => {
+    if (user && !isAdmin) {
+      alert("No tienes permisos para acceder a esta página");
+      navigate("/manuals");
+    }
+  }, [user, isAdmin, navigate]);
 
   // Cargar manual existente si se proporciona editId
   useEffect(() => {
@@ -109,7 +122,19 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
-      <div className="max-w-6xl mx-auto">
+      <Header />
+      <div className="max-w-6xl mx-auto pt-20">
+        {/* Botón de regresar */}
+        <div className="mb-6">
+          <Button
+            onClick={handleBackToList}
+            variant="ghost"
+            className="text-gray-400 hover:text-blue-300 font-medium transition-colors duration-300"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            📚 Volver a Manuales
+          </Button>
+        </div>
         <Card className="bg-black/40 backdrop-blur-xl border border-blue-500/30 shadow-2xl shadow-blue-500/20">
           <CardHeader className="border-b border-blue-500/20 bg-gradient-to-r from-blue-600/20 to-purple-600/20">
             <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent flex items-center gap-3">
@@ -190,17 +215,6 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
                 </div>
               </div>
             )}
-            
-            <div className="mt-8 pt-6 border-t border-blue-500/20">
-              <Button
-                onClick={handleBackToList}
-                variant="ghost"
-                className="text-gray-400 hover:text-blue-300 font-medium transition-colors duration-300"
-              >
-                <ArrowLeft className="h-5 w-5 mr-2" />
-                📚 Ver todos los manuales creados
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>

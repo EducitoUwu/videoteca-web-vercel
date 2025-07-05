@@ -199,18 +199,48 @@ const VideoListPage = () => {
           filteredVideos.map((video) => (
             <Card
               key={video.id}
-              className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 border-2 border-white/10 bg-slate-900/70 backdrop-blur-xl group hover:border-blue-400/60 hover:bg-slate-800/80 rounded-2xl"
+              className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 border-2 border-white/10 bg-slate-900/70 backdrop-blur-xl group hover:border-blue-400/60 hover:bg-slate-800/80 rounded-2xl overflow-hidden"
               onClick={() => setExpandedVideo(video)}
             >
-              <CardHeader className="flex flex-col gap-3 p-6">
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-1 rounded-full font-semibold">
+              {/* Miniatura del video */}
+              <div className="relative w-full h-48 bg-slate-800/50 overflow-hidden">
+                <video
+                  src={video.fileUrl}
+                  preload="metadata"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  muted
+                  playsInline
+                  onMouseEnter={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    video.currentTime = 3; // Mostrar frame a los 3 segundos
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
+                <div className="absolute top-3 left-3">
+                  <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-1 rounded-full font-semibold shadow-lg">
                     {video.category?.name || "Sin categoría"}
                   </Badge>
                 </div>
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                    <div className="w-0 h-0 border-l-8 border-l-white border-y-6 border-y-transparent ml-1"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <CardHeader className="flex flex-col gap-3 p-6">
                 <CardTitle className="text-xl font-bold text-gray-100 group-hover:text-white transition-colors duration-300 leading-tight">
                   {video.title}
                 </CardTitle>
+                {video.description && (
+                  <p className="text-gray-400 text-sm leading-relaxed overflow-hidden" style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}>
+                    {video.description}
+                  </p>
+                )}
                 <div className="w-full h-1 bg-blue-500/40 rounded-full group-hover:bg-gradient-to-r group-hover:from-blue-400 group-hover:to-cyan-400 transition-all duration-500 group-hover:h-2"></div>
               </CardHeader>
             </Card>

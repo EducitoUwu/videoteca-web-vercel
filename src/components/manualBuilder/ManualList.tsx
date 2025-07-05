@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { backendAuthFetch } from "@/lib/utils";
-import { BookOpen, Plus, FileText, Eye, ArrowLeft } from "lucide-react";
+import { BookOpen, Plus, FileText, Eye, ArrowLeft, Edit3, Trash2 } from "lucide-react";
 import ManualViewer from "./ManualViewer";
+import { AuthContext } from "@/contexts/AuthProvider";
+import Header from "@/components/Header";
 
 interface Manual {
   id: string;
@@ -19,7 +21,10 @@ export default function ManualList({ onSelect }: ManualListProps) {
   const [manuals, setManuals] = useState<Manual[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedManualId, setSelectedManualId] = useState<string | null>(null);
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const isAdmin = user?.role === "administrador";
 
   useEffect(() => {
     setLoading(true);
@@ -60,10 +65,9 @@ export default function ManualList({ onSelect }: ManualListProps) {
         </div>
         <ManualViewer 
           manualId={selectedManualId} 
-          onEdit={() => {
-            // Aquí podrías navegar al editor si es necesario
+          onEdit={isAdmin ? () => {
             navigate(`/upload-manual?edit=${selectedManualId}`);
-          }}
+          } : undefined}
         />
       </div>
     );
@@ -84,7 +88,8 @@ export default function ManualList({ onSelect }: ManualListProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
-      <div className="max-w-4xl mx-auto">
+      <Header />
+      <div className="max-w-4xl mx-auto pt-20">
         <div className="mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2 flex items-center gap-3">
             <BookOpen className="h-10 w-10 text-blue-400" />
@@ -136,16 +141,18 @@ export default function ManualList({ onSelect }: ManualListProps) {
           </div>
         )}
 
-        {/* Botón flotante para crear nuevo manual */}
-        <div className="fixed bottom-8 right-8">
-          <Button
-            onClick={() => navigate("/upload-manual")}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-6 py-4 rounded-2xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            Crear Manual
-          </Button>
-        </div>
+        {/* Botón flotante para crear nuevo manual - Solo administradores */}
+        {isAdmin && (
+          <div className="fixed bottom-8 right-8">
+            <Button
+              onClick={() => navigate("/upload-manual")}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-6 py-4 rounded-2xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Crear Manual
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
