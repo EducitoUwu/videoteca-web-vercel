@@ -6,6 +6,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+// Función para debug de requests
+export function logRequest(url: string, data?: any) {
+  console.log(`🔍 Request to: ${url}`);
+  if (data) {
+    console.log('📦 Payload:', JSON.stringify(data, null, 2));
+  }
+}
+
 export async function getFirebaseToken(): Promise<string | null> {
   const user = auth.currentUser;
   if (user) {

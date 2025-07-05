@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { backendAuthFetch } from "@/lib/utils";
+import { Type, Video, Play, Save, X } from "lucide-react";
 
 
 
@@ -66,60 +67,120 @@ export default function BlockEditor({
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <label className="font-semibold">Tipo de bloque:</label>
-        <select
-          value={type}
-          onChange={e => setType(e.target.value as Block["type"])}
-          className="ml-2 rounded border px-2 py-1"
-        >
-          <option value="text">Texto</option>
-          <option value="video">Video</option>
-        </select>
+    <div className="space-y-6">
+      {/* Selector de tipo de bloque */}
+      <div className="space-y-2">
+        <label className="text-purple-300 font-medium text-sm">Tipo de bloque:</label>
+        <div className="flex gap-3">
+          <Button
+            variant={type === "text" ? "default" : "outline"}
+            onClick={() => setType("text")}
+            className={type === "text" 
+              ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white" 
+              : "border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+            }
+          >
+            <Type className="h-4 w-4 mr-2" />
+            Texto
+          </Button>
+          <Button
+            variant={type === "video" ? "default" : "outline"}
+            onClick={() => setType("video")}
+            className={type === "video" 
+              ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white" 
+              : "border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+            }
+          >
+            <Video className="h-4 w-4 mr-2" />
+            Video
+          </Button>
+        </div>
       </div>
 
+      {/* Contenido según el tipo */}
       {type === "text" ? (
-        <textarea
-          className="w-full border rounded p-2"
-          rows={4}
-          placeholder="Escribe el contenido del bloque de texto"
-          value={content}
-          onChange={e => setContent(e.target.value)}
-        />
+        <div className="space-y-2">
+          <label className="text-purple-300 font-medium text-sm">Contenido del texto:</label>
+          <textarea
+            className="w-full bg-black/20 border border-purple-500/30 text-white placeholder:text-gray-400 rounded-lg p-4 focus:border-purple-400 focus:ring-purple-400/20 focus:ring-2 resize-none transition-all duration-300"
+            rows={6}
+            placeholder="Escribe el contenido del bloque de texto..."
+            value={content}
+            onChange={e => setContent(e.target.value)}
+          />
+        </div>
       ) : (
-        <div>
-          <Button onClick={handleOpenVideoSelector}>
-            {videoId ? "Cambiar video" : "Seleccionar video"}
-          </Button>
+        <div className="space-y-4">
+          <label className="text-purple-300 font-medium text-sm">Seleccionar video:</label>
+          
           {videoId && (
-            <div className="mt-2">
-              <span className="text-sm">Video seleccionado: </span>
-              {videos.find(v => v.id === videoId)?.title || videoId}
+            <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/30">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 bg-purple-500/20 rounded-lg">
+                  <Video className="h-5 w-5 text-purple-300" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-purple-200 font-medium">Video seleccionado:</p>
+                  <p className="text-purple-300 text-sm">
+                    {videos.find(v => v.id === videoId)?.title || videoId}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
+          
+          <Button 
+            onClick={handleOpenVideoSelector}
+            variant="outline"
+            className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10 hover:text-purple-200 transition-all duration-300"
+          >
+            <Video className="h-4 w-4 mr-2" />
+            {videoId ? "Cambiar video" : "Seleccionar video"}
+          </Button>
 
-          {/* Modal/Listado de videos */}
+          {/* Modal de selección de videos */}
           {showVideoSelector && (
             <Dialog open={showVideoSelector} onOpenChange={setShowVideoSelector}>
-              <DialogContent>
-                <DialogTitle>Selecciona un video</DialogTitle>
+              <DialogContent className="max-w-4xl bg-black/90 backdrop-blur-xl border border-purple-500/30">
+                <DialogTitle className="text-xl font-bold text-purple-300 flex items-center gap-3">
+                  <Video className="h-6 w-6" />
+                  Selecciona un video
+                </DialogTitle>
+                
                 {loadingVideos ? (
-                  <p>Cargando videos...</p>
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
+                    <span className="ml-3 text-purple-300">Cargando videos...</span>
+                  </div>
                 ) : (
-                  <div className="max-h-60 overflow-y-auto space-y-2">
+                  <div className="max-h-96 overflow-y-auto space-y-3">
                     {videos.length ? (
                       videos.map(video => (
-                        <div key={video.id} className="flex items-center gap-2 border-b py-2">
-                          <video src={video.url} width={100} controls className="rounded" />
-                          <span className="flex-1">{video.title}</span>
-                          <Button onClick={() => handleSelectVideo(video)}>
+                        <div key={video.id} className="flex items-center gap-4 p-4 bg-purple-500/5 rounded-lg border border-purple-500/20 hover:border-purple-400/40 transition-all duration-300">
+                          <video 
+                            src={video.url} 
+                            className="w-32 h-20 object-cover rounded-lg border border-purple-500/30" 
+                            preload="metadata"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-purple-200 font-medium truncate">{video.title}</h3>
+                            <p className="text-purple-400 text-sm truncate">{video.url}</p>
+                          </div>
+                          <Button 
+                            onClick={() => handleSelectVideo(video)}
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-6 transition-all duration-300"
+                          >
+                            <Play className="h-4 w-4 mr-2" />
                             Usar este
                           </Button>
                         </div>
                       ))
                     ) : (
-                      <p>No hay videos disponibles.</p>
+                      <div className="text-center py-12 text-gray-400">
+                        <Video className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                        <p className="text-lg font-medium">No hay videos disponibles</p>
+                        <p className="text-sm">Sube videos primero para poder usarlos en los manuales</p>
+                      </div>
                     )}
                   </div>
                 )}
@@ -129,9 +190,24 @@ export default function BlockEditor({
         </div>
       )}
 
-      <div className="flex gap-2 justify-end">
-        <Button variant="outline" onClick={onCancel}>Cancelar</Button>
-        <Button onClick={handleSave}>Guardar bloque</Button>
+      {/* Botones de acción */}
+      <div className="flex gap-3 justify-end pt-4 border-t border-purple-500/20">
+        <Button 
+          variant="outline" 
+          onClick={onCancel}
+          className="border-gray-500/30 text-gray-400 hover:bg-gray-500/10 hover:text-gray-300 transition-all duration-300"
+        >
+          <X className="h-4 w-4 mr-2" />
+          Cancelar
+        </Button>
+        <Button 
+          onClick={handleSave}
+          disabled={type === "text" ? !content.trim() : !videoId}
+          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-6 transition-all duration-300 disabled:opacity-50"
+        >
+          <Save className="h-4 w-4 mr-2" />
+          Guardar bloque
+        </Button>
       </div>
     </div>
   );
