@@ -107,12 +107,17 @@ export default function SubsectionEditor({
   const handleSaveBlock = async (block: Block) => {
     if (!editingSubId) return;
 
+    const order = subsections.find((s) => s.id === editingSubId)?.blocks.length ?? 0;
+
     const payload = {
       type: block.type,
-      content: block.type === "text" ? block.content : block.videoId,
+      content: block.content || "", // Usar siempre block.content
       subsectionId: editingSubId,
-      // order es opcional - el backend lo calcula automáticamente
+      order, // El backend requiere este campo
     };
+
+    console.log('Enviando bloque:', payload); // Debug
+    console.log('Block recibido del editor:', block); // Debug
 
     try {
       const res = await backendAuthFetch("http://localhost:9999/api/v1/manuals/block", {
@@ -120,6 +125,13 @@ export default function SubsectionEditor({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      
+      if (!res.ok) {
+        const errorData = await res.text();
+        console.error("Error response:", errorData);
+        throw new Error(`HTTP ${res.status}: ${errorData}`);
+      }
+      
       const data = await res.json();
       const newBlock = data.data || data; // Manejar diferentes formatos de respuesta
       setSubsections(subsections.map(sub =>

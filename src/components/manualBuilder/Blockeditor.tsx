@@ -55,10 +55,19 @@ export default function BlockEditor({
 
   const handleSave = () => {
     if (type === "text") {
-      onSave({ type, content });
+      if (!content.trim()) {
+        alert("El contenido del texto no puede estar vacío");
+        return;
+      }
+      onSave({ type, content: content.trim() });
     } else {
+      if (!videoId) {
+        alert("Debes seleccionar un video");
+        return;
+      }
       const video = videos.find((v) => v.id === videoId);
       if (video) {
+        // Para bloques de video, el contenido debe ser la URL del video
         onSave({ type, content: video.url, videoId: video.id });
       } else {
         alert("No se encontró la url del video seleccionado");
