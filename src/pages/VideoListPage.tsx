@@ -65,7 +65,26 @@ const VideoListPage = () => {
   });
 
   return (
-    <div className="bg-blue-50 min-h-screen px-0 sm:px-8 relative">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 px-0 sm:px-8 relative overflow-hidden">
+      
+      {/* Efectos de fondo sutiles */}
+      <div className="absolute inset-0">
+        <div className="absolute top-20 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 -right-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
+      </div>
+      
+      {/* Patrón de puntos */}
+      <div className="absolute inset-0 opacity-20" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='7' cy='7' r='1'/%3E%3Ccircle cx='53' cy='7' r='1'/%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3Ccircle cx='7' cy='53' r='1'/%3E%3Ccircle cx='53' cy='53' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+      }}></div>
+
+      {/* Grid de líneas */}
+      <div className="absolute inset-0 opacity-5" style={{
+        backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)`,
+        backgroundSize: '50px 50px'
+      }}></div>
+
       <Header />
       
       {/* Botón flotante para admins */}
@@ -73,19 +92,18 @@ const VideoListPage = () => {
         <div className="fixed bottom-6 right-6 z-50">
           <Button 
             onClick={() => navigate("/upload-video")}
-            className="w-14 h-14 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110"
+            className="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 hover:scale-110 border border-emerald-400/30 backdrop-blur-sm"
             title="Subir nuevo video"
           >
-            <Plus className="w-6 h-6" />
-            
+            <Plus className="w-7 h-7" />
           </Button>
         </div>
       )}
       
       {!expandedVideo && (
         <>
-          <div className="flex flex-col sm:flex-row items-center justify-between pt-8 pb-4 px-4 sm:px-0 gap-4">
-            <h1 className="text-3xl font-bold text-blue-800 w-full sm:w-auto text-left mb-2 sm:mb-0">
+          <div className="flex flex-col sm:flex-row items-center justify-between pt-8 pb-6 px-4 sm:px-0 gap-4 relative z-10">
+            <h1 className="text-4xl md:text-5xl font-black w-full sm:w-auto text-left mb-2 sm:mb-0 bg-gradient-to-r from-white via-blue-200 to-cyan-300 bg-clip-text text-transparent drop-shadow-lg">
               Videos Disponibles
             </h1>
             <div className="flex gap-2 items-center">
@@ -94,7 +112,7 @@ const VideoListPage = () => {
           </div>
 
           {/* Buscador */}
-          <div className="flex justify-center mb-4 px-4">
+          <div className="flex justify-center mb-6 px-4 relative z-10">
             <div className="relative w-full max-w-lg">
               <Input
                 placeholder="Buscar video..."
@@ -103,24 +121,24 @@ const VideoListPage = () => {
                   setSearch(e.target.value);
                   setExpandedVideo(null);
                 }}
-                className="pl-10 pr-4 py-2 text-base shadow-sm focus:ring-2 focus:ring-blue-300"
+                className="pl-12 pr-4 py-4 text-base bg-slate-800/60 border-2 border-blue-400/30 focus:border-blue-400/60 focus:ring-2 focus:ring-blue-400/30 text-white placeholder:text-gray-400 backdrop-blur-md rounded-xl transition-all duration-300"
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400 w-5 h-5" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-400 w-5 h-5" />
             </div>
           </div>
 
           {/* Categorías estilo chips con Tooltip y Select para móviles */}
-          <div className="flex flex-wrap gap-2 justify-center px-4 pb-6">
+          <div className="flex flex-wrap gap-3 justify-center px-4 pb-8 relative z-10">
             <TooltipProvider>
               {categories.map((category) => (
                 <Tooltip key={category}>
                   <TooltipTrigger asChild>
                     <Button
                       variant={selectedCategory === category ? "default" : "outline"}
-                      className={`rounded-full px-4 py-1 text-sm transition-all ${
+                      className={`rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 backdrop-blur-md ${
                         selectedCategory === category
-                          ? "bg-blue-700 text-white"
-                          : "bg-white text-blue-700 border-blue-300 hover:bg-blue-100"
+                          ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white border-blue-400/60 shadow-lg shadow-blue-500/30 scale-105"
+                          : "bg-slate-800/60 text-gray-300 border-blue-400/30 hover:bg-blue-500/20 hover:border-blue-400/60 hover:text-white hover:scale-105"
                       }`}
                       onClick={() => {
                         setSelectedCategory(category);
@@ -130,7 +148,7 @@ const VideoListPage = () => {
                       {category}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent className="bg-gray-800 text-white border-gray-700">
                     Filtrar por {category}
                   </TooltipContent>
                 </Tooltip>
@@ -139,7 +157,7 @@ const VideoListPage = () => {
           </div>
           
           {/* Select para categorías en móvil */}
-          <div className="block sm:hidden px-4 mb-4">
+          <div className="block sm:hidden px-4 mb-6 relative z-10">
             <Select
               value={selectedCategory}
               onValueChange={(value) => {
@@ -147,12 +165,12 @@ const VideoListPage = () => {
                 setExpandedVideo(null);
               }}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full bg-slate-800/60 border-blue-400/30 text-white backdrop-blur-md rounded-xl transition-all duration-300">
                 <SelectValue placeholder="Selecciona una categoría" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-slate-800/95 border-gray-600 backdrop-blur-md">
                 {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
+                  <SelectItem key={category} value={category} className="text-white hover:bg-blue-500/20 focus:bg-blue-500/20">
                     {category}
                   </SelectItem>
                 ))}
@@ -163,65 +181,74 @@ const VideoListPage = () => {
       )}
 
       {(loading || localLoading) && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 px-4 relative z-10">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-40 rounded-xl" />
+            <Skeleton key={i} className="h-48 rounded-2xl bg-slate-800/60 border border-blue-400/30 animate-pulse" />
           ))}
         </div>
       )}
       
-      {error && <p className="text-red-500 text-center">{error}</p>}
+      {error && <p className="text-red-400 text-center text-lg font-medium relative z-10">{error}</p>}
 
       {filteredVideos.length === 0 && !loading && !expandedVideo && (
-        <p className="text-gray-600 text-center">No hay videos disponibles en esta categoría o búsqueda.</p>
+        <p className="text-gray-400 text-center text-lg relative z-10">No hay videos disponibles en esta categoría o búsqueda.</p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 px-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 px-4 relative z-10">
         {!expandedVideo &&
           filteredVideos.map((video) => (
             <Card
               key={video.id}
-              className="cursor-pointer transition-transform hover:scale-105 hover:shadow-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-100 to-cyan-100 group"
+              className="cursor-pointer transition-all duration-500 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 border-2 border-white/10 bg-slate-900/70 backdrop-blur-xl group hover:border-blue-400/60 hover:bg-slate-800/80 rounded-2xl"
               onClick={() => setExpandedVideo(video)}
             >
-              <CardHeader className="flex flex-col gap-2">
+              <CardHeader className="flex flex-col gap-3 p-6">
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-blue-600 text-white">{video.category?.name || "Sin categoría"}</Badge>
+                  <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-1 rounded-full font-semibold">
+                    {video.category?.name || "Sin categoría"}
+                  </Badge>
                 </div>
-                <CardTitle className="text-lg font-bold text-blue-800 group-hover:underline">{video.title}</CardTitle>
+                <CardTitle className="text-xl font-bold text-gray-100 group-hover:text-white transition-colors duration-300 leading-tight">
+                  {video.title}
+                </CardTitle>
+                <div className="w-full h-1 bg-blue-500/40 rounded-full group-hover:bg-gradient-to-r group-hover:from-blue-400 group-hover:to-cyan-400 transition-all duration-500 group-hover:h-2"></div>
               </CardHeader>
             </Card>
           ))}
 
         {expandedVideo && (
-          <div className="col-span-full max-w-4xl mx-auto">
+          <div className="col-span-full max-w-4xl mx-auto relative z-10">
             {/* Botón volver */}
-            <div className="mb-4">
+            <div className="mb-6">
               <Button
                 variant="outline"
                 onClick={() => setExpandedVideo(null)}
-                className="gap-2"
+                className="gap-2 bg-slate-800/60 border-blue-400/30 text-gray-300 hover:bg-blue-500/20 hover:border-blue-400/60 hover:text-white backdrop-blur-md rounded-xl px-6 py-3 transition-all duration-300"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-5 h-5" />
                 Volver a la lista
               </Button>
             </div>
             
-            <Card className="shadow-2xl border-2 border-blue-400 bg-white/95 backdrop-blur-md animate-fade-in">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold text-blue-900">{expandedVideo.title}</CardTitle>
-                <Badge className="bg-blue-700 text-white mt-2 w-fit">
+            <Card className="shadow-2xl border-2 border-blue-400/40 bg-slate-900/90 backdrop-blur-xl rounded-2xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-slate-800/60 to-slate-700/60 p-8">
+                <CardTitle className="text-3xl font-black text-white mb-4 drop-shadow-lg">
+                  {expandedVideo.title}
+                </CardTitle>
+                <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-full font-semibold w-fit shadow-lg">
                   {expandedVideo.category?.name || "Sin categoría"}
                 </Badge>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 mb-4">{expandedVideo.description || "Sin descripción"}</p>
-                <small className="text-gray-500 block mb-4">
+              <CardContent className="p-8">
+                <p className="text-gray-300 mb-6 text-lg leading-relaxed">
+                  {expandedVideo.description || "Sin descripción"}
+                </p>
+                <small className="text-gray-400 block mb-8 text-base">
                   Publicado el {new Date(expandedVideo.createdAt).toLocaleDateString()}
                 </small>
-                <div className="flex gap-2 mb-6">
+                <div className="flex gap-3 mb-8">
                   <Button
-                    className="bg-gradient-to-r from-blue-700 to-cyan-500 text-white font-semibold py-2 rounded-lg flex-1"
+                    className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-4 px-8 rounded-xl flex-1 text-lg shadow-lg hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105"
                     onClick={() => window.open(expandedVideo.fileUrl, "_blank")}
                   >
                     Ver video
