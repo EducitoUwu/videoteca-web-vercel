@@ -66,7 +66,7 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
     
     setLoading(true);
     try {
-      const res = await backendAuthFetch("http://localhost:9999/api/v1/manuals", {
+      const res = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/v1/manuals`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -86,7 +86,7 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
       setManualTitle("");
       
       // Fetch estructura real del manual recién creado
-      const getRes = await backendAuthFetch(`http://localhost:9999/api/v1/manuals/${manualId}`);
+      const getRes = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/${manualId}`);
       const getData = await getRes.json();
       setSections(getData.data?.sections || []);
     } catch (err) {
@@ -101,7 +101,7 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
     if (!manualId || !manualTitle.trim()) return;
     
     try {
-      await backendAuthFetch(`http://localhost:9999/api/v1/manuals/${manualId}`, {
+      await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/${manualId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
