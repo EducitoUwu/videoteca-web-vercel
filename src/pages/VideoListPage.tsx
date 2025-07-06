@@ -92,7 +92,7 @@ const VideoListPage = () => {
         <div className="fixed bottom-6 right-6 z-50">
           <Button 
             onClick={() => navigate("/upload-video")}
-            className="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 hover:scale-110 border border-emerald-400/30 backdrop-blur-sm"
+            className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-110 border border-blue-400/30 backdrop-blur-sm"
             title="Subir nuevo video"
           >
             <Plus className="w-7 h-7" />
@@ -103,11 +103,19 @@ const VideoListPage = () => {
       {!expandedVideo && (
         <>
           <div className="flex flex-col sm:flex-row items-center justify-between pt-8 pb-6 px-4 sm:px-0 gap-4 relative z-10">
-            <h1 className="text-4xl md:text-5xl font-black w-full sm:w-auto text-left mb-2 sm:mb-0 bg-gradient-to-r from-white via-blue-200 to-cyan-300 bg-clip-text text-transparent drop-shadow-lg">
-              Videos Disponibles
-            </h1>
-            <div className="flex gap-2 items-center">
-              
+            <div className="flex items-center gap-4 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                onClick={() => navigate("/select")}
+                className="gap-2 bg-slate-800/60 border-blue-400/30 text-gray-300 hover:bg-blue-500/20 hover:border-blue-400/60 hover:text-white backdrop-blur-md rounded-xl px-4 py-2 transition-all duration-300"
+                title="Volver a selección"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Volver
+              </Button>
+              <h1 className="text-4xl md:text-5xl font-black text-left mb-2 sm:mb-0 bg-gradient-to-r from-white via-blue-200 to-cyan-300 bg-clip-text text-transparent drop-shadow-lg leading-tight">
+                <span className="break-words">Videoteca</span>
+              </h1>
             </div>
           </div>
 

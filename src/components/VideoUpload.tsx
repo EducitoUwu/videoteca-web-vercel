@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -6,11 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, CheckCircle, AlertCircle, Video, FileText, Tag, Plus } from 'lucide-react';
+import { Upload, CheckCircle, AlertCircle, Video, FileText, Tag, Plus, ArrowLeft } from 'lucide-react';
 import { backendAuthFetch } from "../lib/utils";
+import Header from "./Header";
 
 
 const VideoUpload = () => {
+  const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -33,7 +36,7 @@ const VideoUpload = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await backendAuthFetch('${import.meta.env.VITE_API_URL}/categories');
+        const response = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/categories`);
         const data = await response.json();
         setCategories(data.data || data);
       } catch (error) {
@@ -126,20 +129,18 @@ const VideoUpload = () => {
       setProgress(0);
       setError(null);
 
-      let categoryId = selectedCategory;
-      
-      // Crear nueva categoría si es necesario
-      if (!selectedCategory && newCategory.trim() !== '') {
-        try {
-          const response = await backendAuthFetch('${import.meta.env.VITE_API_URL}/categories', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              name: newCategory.trim(),
-            }),
-          });
+      let categoryId = selectedCategory;        // Crear nueva categoría si es necesario
+        if (!selectedCategory && newCategory.trim() !== '') {
+          try {
+            const response = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/categories`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                name: newCategory.trim(),
+              }),
+            });
           
           if (!response.ok) {
             throw new Error('Error al crear la categoría');
@@ -194,7 +195,7 @@ const VideoUpload = () => {
         });
 
         const token = localStorage.getItem("accessToken");
-        xhr.open('POST', '${import.meta.env.VITE_API_URL}/videos/upload');
+        xhr.open('POST', `${import.meta.env.VITE_API_URL}/videos/upload`);
         xhr.setRequestHeader('Authorization', `Bearer ${token}`);
         xhr.timeout = 300000; // 5 minutos de timeout
         xhr.send(formData);
@@ -222,13 +223,27 @@ const VideoUpload = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 p-4 sm:p-6">
+      <Header />
+      
       {/* Efectos de fondo */}
       <div className="absolute inset-0">
         <div className="absolute top-20 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 -right-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
       </div>
 
-      <div className="max-w-2xl mx-auto relative z-10">
+      <div className="max-w-2xl mx-auto relative z-10 pt-20">
+        {/* Botón volver */}
+        <div className="mb-6">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/videos")}
+            className="gap-2 bg-slate-800/60 border-blue-400/30 text-gray-300 hover:bg-blue-500/20 hover:border-blue-400/60 hover:text-white backdrop-blur-md rounded-xl px-6 py-3 transition-all duration-300"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Volver a videos
+          </Button>
+        </div>
+        
         <Card className="border-2 border-blue-400/30 bg-slate-800/80 backdrop-blur-xl shadow-2xl shadow-blue-500/10 rounded-2xl overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-slate-800/60 to-slate-700/60 p-8">
             <div className="flex items-center gap-4">

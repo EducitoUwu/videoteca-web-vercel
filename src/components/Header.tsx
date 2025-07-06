@@ -17,23 +17,28 @@ function getShortName(fullName: string) {
   return `${capitalize(firstName)}${lastName ? " " + capitalize(lastName) : ""}`;
 }
 
+
+
+
 export default function Header() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   if (!user) return null;
 
+  const welcomeMessage = "Bienvenido/a"; // Default message
+
   return (
     <header
-      className="fixed top-4 right-4 z-50 flex items-center gap-4 bg-white/80 shadow-md rounded-xl px-4 py-2"
+      className="fixed top-4 right-4 z-50 flex items-center gap-4 bg-slate-900/80 backdrop-blur-lg shadow-2xl shadow-blue-500/20 rounded-xl px-6 py-3 border border-blue-400/30"
       style={{ minWidth: 0 }}
     >
-      <span className="font-semibold text-blue-800 text-base truncate max-w-xs">
-        Bienvenido, {getShortName(user.fullName)}
+      <span className="font-semibold text-blue-200 text-base truncate max-w-xs">
+        {welcomeMessage}, {getShortName(user.fullName)}
       </span>
       <Button
         variant="outline"
-        className="gap-2"
+        className="gap-2 bg-gradient-to-r from-red-500/20 to-red-600/20 border-red-400/30 text-red-200 hover:bg-red-500/30 hover:border-red-400/60 hover:text-white transition-all duration-300 backdrop-blur-sm"
         onClick={async () => {
           await logout();
           navigate("/");

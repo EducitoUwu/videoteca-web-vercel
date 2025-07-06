@@ -128,11 +128,11 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
         <div className="mb-6">
           <Button
             onClick={handleBackToList}
-            variant="ghost"
-            className="text-gray-400 hover:text-blue-300 font-medium transition-colors duration-300"
+            variant="outline"
+            className="gap-2 bg-slate-800/60 border-blue-400/30 text-gray-300 hover:bg-blue-500/20 hover:border-blue-400/60 hover:text-white backdrop-blur-md rounded-xl px-6 py-3 transition-all duration-300"
           >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            📚 Volver a Manuales
+            <ArrowLeft className="h-5 w-5" />
+            Volver a manuales
           </Button>
         </div>
         <Card className="bg-black/40 backdrop-blur-xl border border-blue-500/30 shadow-2xl shadow-blue-500/20">

@@ -19,12 +19,12 @@ import {
   Menu,
   BookOpen,
   Navigation,
-  Eye,
-  EyeOff
+  ArrowLeft
 } from 'lucide-react';
 import { AuthContext } from '../../contexts/AuthProvider';
 import { backendAuthFetch } from '../../lib/utils';
 import videoService from '../../services/video';
+import Header from '../Header';
 
 interface Block {
   id: string;
@@ -85,6 +85,17 @@ function ModernSidebar({
   const { user } = useContext(AuthContext);
 
   const isAdmin = user?.role === "administrador";
+
+  // Auto-expandir sección seleccionada
+  useEffect(() => {
+    if (selectedSectionId) {
+      setExpandedSections(prev => {
+        const newSet = new Set(prev);
+        newSet.add(selectedSectionId);
+        return newSet;
+      });
+    }
+  }, [selectedSectionId]);
 
   const toggleSection = (sectionId: string) => {
     const newExpanded = new Set(expandedSections);
@@ -157,14 +168,14 @@ function ModernSidebar({
       let body = {};
 
       if (showAddDialog.type === 'section') {
-        endpoint = '${import.meta.env.VITE_API_URL}/manuals/section';
+        endpoint = `${import.meta.env.VITE_API_URL}/manuals/section`;
         body = {
           title: newItemTitle.trim(),
           manualId: manual?.id,
           order: manual?.sections?.length || 0
         };
       } else {
-        endpoint = '${import.meta.env.VITE_API_URL}/manuals/subsection';
+        endpoint = `${import.meta.env.VITE_API_URL}/manuals/subsection`;
         const section = manual?.sections.find(s => s.id === showAddDialog.parentId);
         body = {
           title: newItemTitle.trim(),
@@ -550,14 +561,15 @@ function ModernTextBlock({
 export default function ManualViewer({
   manualId,
   onEdit,
+  onBack,
 }: {
   manualId: string;
   onEdit?: () => void;
+  onBack?: () => void;
 }) {
   const [manual, setManual] = useState<Manual | null>(null);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedSubsectionId, setSelectedSubsectionId] = useState<string | null>(null);
-  const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
@@ -571,6 +583,7 @@ export default function ManualViewer({
   
   const { user } = useContext(AuthContext);
   const isAdmin = user?.role === "administrador";
+  const editMode = false; // Modo edición deshabilitado - solo "Editor avanzado" disponible
   const subsectionRefs = useRef<{ [subId: string]: HTMLDivElement | null }>({});
 
   // Cargar manual
@@ -581,8 +594,13 @@ export default function ManualViewer({
       const data = await response.json();
       setManual(data.data || data);
       
-      if (data.sections?.[0]) {
-        setSelectedSectionId(data.sections[0].id);
+      // Auto-seleccionar primera sección si no hay ninguna seleccionada
+      if ((data.data || data).sections?.[0] && !selectedSectionId) {
+        setSelectedSectionId((data.data || data).sections[0].id);
+        // Auto-seleccionar primera subsección también
+        if ((data.data || data).sections[0].subsections?.[0]) {
+          setSelectedSubsectionId((data.data || data).sections[0].subsections[0].id);
+        }
       }
     } catch (error) {
       console.error('Error loading manual:', error);
@@ -609,12 +627,30 @@ export default function ManualViewer({
   // Auto-scroll a subsección seleccionada
   useEffect(() => {
     if (selectedSubsectionId && subsectionRefs.current[selectedSubsectionId]) {
-      subsectionRefs.current[selectedSubsectionId]?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
+      setTimeout(() => {
+        subsectionRefs.current[selectedSubsectionId]?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 100);
     }
   }, [selectedSubsectionId]);
+
+  // Efecto para expandir automáticamente secciones seleccionadas
+  useEffect(() => {
+    if (selectedSectionId && manual) {
+      const section = manual.sections.find(s => s.id === selectedSectionId);
+      if (section) {
+        // Si la sección no tiene subsecciones, limpiar subsección seleccionada
+        if (!section.subsections || section.subsections.length === 0) {
+          setSelectedSubsectionId(null);
+        } else if (!selectedSubsectionId) {
+          // Auto-seleccionar primera subsección si no hay ninguna seleccionada
+          setSelectedSubsectionId(section.subsections[0].id);
+        }
+      }
+    }
+  }, [selectedSectionId, manual]);
 
   // Handlers para bloques
   const handleEditBlock = (blockId: string, type: 'text' | 'video', currentContent: string) => {
@@ -676,7 +712,7 @@ export default function ManualViewer({
         .flatMap(s => s.subsections)
         .find(sub => sub.id === showAddBlockDialog.subsectionId);
 
-      await backendAuthFetch('${import.meta.env.VITE_API_URL}/manuals/block', {
+      await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/block`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -711,12 +747,62 @@ export default function ManualViewer({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex">
-      {/* Efectos de fondo */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 -right-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex flex-col">
+      {/* Header de usuario */}
+      <Header />
+      
+      {/* Header superior azul con botón de volver */}
+      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 backdrop-blur-lg border-b border-blue-400/30 sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="text-blue-100 hover:text-white hover:bg-blue-700/50"
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
+              {onBack && (
+                <Button
+                  onClick={onBack}
+                  variant="outline"
+                  className="gap-2 bg-blue-800/60 border-blue-400/30 text-blue-100 hover:bg-blue-700/60 hover:border-blue-400/60 hover:text-white backdrop-blur-md rounded-xl px-4 py-2 transition-all duration-300"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Volver a la lista
+                </Button>
+              )}
+              <div>
+                <h1 className="text-xl font-bold text-white flex items-center gap-3">
+                  <BookOpen className="w-6 h-6 text-blue-200" />
+                  {manual?.title || 'Manual'}
+                </h1>
+                <p className="text-blue-200 text-sm mt-1">
+                  Documentación técnica
+                </p>
+              </div>
+            </div>
+            
+            {onEdit && isAdmin && (
+              <Button
+                onClick={onEdit}
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Editor avanzado
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
+
+      <div className="flex flex-1">
+        {/* Efectos de fondo */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 -right-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+        </div>
 
       {/* Sidebar */}
       {!sidebarCollapsed && (
@@ -736,67 +822,29 @@ export default function ManualViewer({
 
       {/* Área principal de contenido */}
       <main className="flex-1 relative z-10">
-        {/* Header */}
-        <div className="bg-slate-900/90 backdrop-blur-xl border-b border-blue-400/20 p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="text-gray-400 hover:text-white"
-              >
-                <Menu className="w-5 h-5" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-black bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
-                  {selectedSection?.title || manual?.title || 'Manual'}
-                </h1>
-                <p className="text-gray-400 text-sm mt-1">
-                  Documentación técnica
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              {isAdmin && (
-                <Button
-                  onClick={() => setEditMode(!editMode)}
-                  variant={editMode ? "default" : "outline"}
-                  className={editMode 
-                    ? "bg-orange-500 hover:bg-orange-600 text-white" 
-                    : "border-blue-400/30 text-blue-400 hover:bg-blue-500/10"
-                  }
-                >
-                  {editMode ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
-                  {editMode ? 'Vista previa' : 'Modo edición'}
-                </Button>
-              )}
-              {onEdit && isAdmin && (
-                <Button
-                  onClick={onEdit}
-                  className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Editor avanzado
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-
         {/* Contenido */}
-        <div className="p-8 max-h-[calc(100vh-120px)] overflow-y-auto">
-          {selectedSection?.subsections && selectedSection.subsections.length > 0 ? (
+        <div className="p-8 max-h-[calc(100vh-180px)] overflow-y-auto">
+          {selectedSection && selectedSection.subsections && selectedSection.subsections.length > 0 ? (
             selectedSection.subsections.map((subsection) => (
               <div
                 key={subsection.id}
                 ref={(el) => { subsectionRefs.current[subsection.id] = el; }}
-                className="mb-12"
+                className={`mb-12 transition-all duration-300 ${
+                  selectedSubsectionId === subsection.id 
+                    ? 'ring-2 ring-blue-400/30 bg-slate-800/20 rounded-2xl p-6' 
+                    : ''
+                }`}
               >
                 {/* Header de subsección */}
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
+                  <h2 className={`text-2xl font-bold text-white flex items-center gap-3 transition-colors ${
+                    selectedSubsectionId === subsection.id ? 'text-blue-300' : ''
+                  }`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                      selectedSubsectionId === subsection.id 
+                        ? 'bg-gradient-to-br from-blue-400 to-cyan-500' 
+                        : 'bg-gradient-to-br from-cyan-500 to-blue-600'
+                    }`}>
                       <Navigation className="w-4 h-4 text-white" />
                     </div>
                     {subsection.title}
@@ -840,19 +888,12 @@ export default function ManualViewer({
                         )
                       ))
                   ) : (
-                    <div className="text-center py-12 text-gray-400">
-                      <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>No hay contenido en esta subsección</p>
-                      {editMode && (
-                        <Button
-                          onClick={() => setShowAddBlockDialog({subsectionId: subsection.id})}
-                          variant="ghost"
-                          className="mt-4 text-blue-400 hover:text-blue-300"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Agregar primer bloque
-                        </Button>
-                      )}
+                    <div className="text-center py-16 text-gray-400">
+                      <div className="w-20 h-20 mx-auto mb-6 bg-slate-800/60 rounded-full flex items-center justify-center">
+                        <FileText className="w-10 h-10 opacity-50" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Sin contenido disponible</h3>
+                      <p className="text-sm text-gray-500">Esta subsección aún no tiene bloques de contenido</p>
                     </div>
                   )}
                 </div>
@@ -860,9 +901,13 @@ export default function ManualViewer({
             ))
           ) : (
             <div className="text-center py-20 text-gray-400">
-              <BookOpen className="w-16 h-16 mx-auto mb-6 opacity-50" />
-              <h3 className="text-xl font-semibold mb-4">No hay subsecciones en esta sección</h3>
-              <p>Usa el modo edición para agregar contenido</p>
+              <div className="w-24 h-24 mx-auto mb-8 bg-slate-800/60 rounded-full flex items-center justify-center">
+                <BookOpen className="w-12 h-12 opacity-50" />
+              </div>
+              <h3 className="text-2xl font-semibold mb-4 text-white">Sección sin subsecciones</h3>
+              <p className="text-gray-400 max-w-md mx-auto leading-relaxed">
+                Esta sección no tiene subsecciones definidas. {isAdmin ? 'Usa el "Editor avanzado" para añadir contenido.' : 'Contacta al administrador para añadir contenido.'}
+              </p>
             </div>
           )}
         </div>
@@ -972,6 +1017,7 @@ export default function ManualViewer({
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

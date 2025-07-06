@@ -52,24 +52,13 @@ export default function ManualList({ onSelect }: ManualListProps) {
   // Si hay un manual seleccionado, mostrar el viewer
   if (selectedManualId) {
     return (
-      <div className="relative">
-        <div className="absolute top-4 left-4 z-10">
-          <Button
-            onClick={() => setSelectedManualId(null)}
-            variant="outline"
-            className="bg-black/60 backdrop-blur-sm border-blue-500/30 text-blue-300 hover:bg-blue-500/10 hover:text-blue-200"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver a la lista
-          </Button>
-        </div>
-        <ManualViewer 
-          manualId={selectedManualId} 
-          onEdit={isAdmin ? () => {
-            navigate(`/upload-manual?edit=${selectedManualId}`);
-          } : undefined}
-        />
-      </div>
+      <ManualViewer 
+        manualId={selectedManualId} 
+        onBack={() => setSelectedManualId(null)}
+        onEdit={isAdmin ? () => {
+          navigate(`/upload-manual?edit=${selectedManualId}`);
+        } : undefined}
+      />
     );
   }
 
@@ -91,9 +80,20 @@ export default function ManualList({ onSelect }: ManualListProps) {
       <Header />
       <div className="max-w-4xl mx-auto pt-20">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2 flex items-center gap-3">
-            <BookOpen className="h-10 w-10 text-blue-400" />
-            Biblioteca de Manuales
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/select")}
+              className="gap-2 bg-slate-800/60 border-blue-400/30 text-gray-300 hover:bg-blue-500/20 hover:border-blue-400/60 hover:text-white backdrop-blur-md rounded-xl px-4 py-2 transition-all duration-300"
+              title="Volver a selección"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Volver
+            </Button>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2 flex items-center gap-3 leading-tight">
+            <BookOpen className="h-10 w-10 text-blue-400 flex-shrink-0" />
+            <span className="break-words">Manuales</span>
           </h1>
           <p className="text-blue-300/80">Gestiona y consulta la documentación del sistema</p>
         </div>
@@ -146,10 +146,10 @@ export default function ManualList({ onSelect }: ManualListProps) {
           <div className="fixed bottom-8 right-8">
             <Button
               onClick={() => navigate("/upload-manual")}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-6 py-4 rounded-2xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105"
+              className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-110 border border-blue-400/30 backdrop-blur-sm"
+              title="Crear nuevo manual"
             >
-              <Plus className="h-5 w-5 mr-2" />
-              Crear Manual
+              <Plus className="h-7 w-7" />
             </Button>
           </div>
         )}
