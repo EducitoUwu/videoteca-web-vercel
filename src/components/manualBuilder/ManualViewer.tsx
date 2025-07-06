@@ -110,15 +110,15 @@ function ModernSidebar({
 
       switch (editingItem.type) {
         case 'manual':
-          endpoint = `http://localhost:9999/api/v1/manuals/${editingItem.id}`;
+          endpoint = `${import.meta.env.VITE_API_URL}/manuals/${editingItem.id}`;
           body = { title: editValue.trim() };
           break;
         case 'section':
-          endpoint = `http://localhost:9999/api/v1/manuals/section/${editingItem.id}`;
+          endpoint = `${import.meta.env.VITE_API_URL}/manuals/section/${editingItem.id}`;
           body = { title: editValue.trim() };
           break;
         case 'subsection':
-          endpoint = `http://localhost:9999/api/v1/manuals/subsection/${editingItem.id}`;
+          endpoint = `${import.meta.env.VITE_API_URL}/manuals/subsection/${editingItem.id}`;
           body = { title: editValue.trim() };
           break;
       }
@@ -141,7 +141,7 @@ function ModernSidebar({
     if (!confirm(`¿Estás seguro de que quieres eliminar esta ${type === 'section' ? 'sección' : 'subsección'}?`)) return;
 
     try {
-      const endpoint = `http://localhost:9999/api/v1/manuals/${type}/${id}`;
+      const endpoint = `${import.meta.env.VITE_API_URL}/manuals/${type}/${id}`;
       await backendAuthFetch(endpoint, { method: 'DELETE' });
       onUpdateManual();
     } catch (error) {
@@ -157,14 +157,14 @@ function ModernSidebar({
       let body = {};
 
       if (showAddDialog.type === 'section') {
-        endpoint = 'http://localhost:9999/api/v1/manuals/section';
+        endpoint = '${import.meta.env.VITE_API_URL}/manuals/section';
         body = {
           title: newItemTitle.trim(),
           manualId: manual?.id,
           order: manual?.sections?.length || 0
         };
       } else {
-        endpoint = 'http://localhost:9999/api/v1/manuals/subsection';
+        endpoint = '${import.meta.env.VITE_API_URL}/manuals/subsection';
         const section = manual?.sections.find(s => s.id === showAddDialog.parentId);
         body = {
           title: newItemTitle.trim(),
@@ -577,7 +577,7 @@ export default function ManualViewer({
   const loadManual = async () => {
     try {
       setLoading(true);
-      const response = await backendAuthFetch(`http://localhost:9999/api/v1/manuals/${manualId}`);
+      const response = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/${manualId}`);
       const data = await response.json();
       setManual(data.data || data);
       
@@ -634,7 +634,7 @@ export default function ManualViewer({
         ? videos.find(v => v.id === selectedVideoId)?.fileUrl || ''
         : blockContent;
 
-      await backendAuthFetch(`http://localhost:9999/api/v1/manuals/block/${editingBlock.blockId}`, {
+      await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/block/${editingBlock.blockId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content }),
@@ -653,7 +653,7 @@ export default function ManualViewer({
     if (!confirm('¿Estás seguro de que quieres eliminar este bloque?')) return;
 
     try {
-      await backendAuthFetch(`http://localhost:9999/api/v1/manuals/block/${blockId}`, {
+      await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/block/${blockId}`, {
         method: 'DELETE',
       });
       loadManual();
@@ -676,7 +676,7 @@ export default function ManualViewer({
         .flatMap(s => s.subsections)
         .find(sub => sub.id === showAddBlockDialog.subsectionId);
 
-      await backendAuthFetch('http://localhost:9999/api/v1/manuals/block', {
+      await backendAuthFetch('${import.meta.env.VITE_API_URL}/manuals/block', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

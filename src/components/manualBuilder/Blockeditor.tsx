@@ -42,7 +42,7 @@ export default function BlockEditor({
   const handleOpenVideoSelector = () => {
     setShowVideoSelector(true);
     setLoadingVideos(true);
-    backendAuthFetch("http://localhost:9999/api/v1/videos")
+    backendAuthFetch(`${import.meta.env.VITE_API_URL}/videos`)
       .then(res => res.json())
       .then(data => setVideos(Array.isArray(data) ? data : data.data))
       .finally(() => setLoadingVideos(false));

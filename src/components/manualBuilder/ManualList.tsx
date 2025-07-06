@@ -28,7 +28,7 @@ export default function ManualList({ onSelect }: ManualListProps) {
 
   useEffect(() => {
     setLoading(true);
-    backendAuthFetch("http://localhost:9999/api/v1/manuals")
+    backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setManuals(data);

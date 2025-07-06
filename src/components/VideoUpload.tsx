@@ -33,7 +33,7 @@ const VideoUpload = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await backendAuthFetch('http://localhost:9999/api/v1/categories');
+        const response = await backendAuthFetch('${import.meta.env.VITE_API_URL}/categories');
         const data = await response.json();
         setCategories(data.data || data);
       } catch (error) {
@@ -131,7 +131,7 @@ const VideoUpload = () => {
       // Crear nueva categoría si es necesario
       if (!selectedCategory && newCategory.trim() !== '') {
         try {
-          const response = await backendAuthFetch('http://localhost:9999/api/v1/categories', {
+          const response = await backendAuthFetch('${import.meta.env.VITE_API_URL}/categories', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -194,7 +194,7 @@ const VideoUpload = () => {
         });
 
         const token = localStorage.getItem("accessToken");
-        xhr.open('POST', 'http://localhost:9999/api/v1/videos/upload');
+        xhr.open('POST', '${import.meta.env.VITE_API_URL}/videos/upload');
         xhr.setRequestHeader('Authorization', `Bearer ${token}`);
         xhr.timeout = 300000; // 5 minutos de timeout
         xhr.send(formData);

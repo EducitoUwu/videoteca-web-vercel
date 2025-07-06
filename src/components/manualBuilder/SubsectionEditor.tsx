@@ -37,7 +37,7 @@ export default function SubsectionEditor({
     try {
       const payload = { title, sectionId }; // Sin campo order
       
-      const res = await backendAuthFetch("http://localhost:9999/api/v1/manuals/subsection", {
+      const res = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/subsection`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -67,7 +67,7 @@ export default function SubsectionEditor({
     }
     
     try {
-      await backendAuthFetch(`http://localhost:9999/api/v1/manuals/subsection/${subsectionId}`, {
+      await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/subsection/${subsectionId}`, {
         method: "DELETE",
       });
       setSubsections(subsections.filter(s => s.id !== subsectionId));
@@ -83,7 +83,7 @@ export default function SubsectionEditor({
     }
     
     try {
-      await backendAuthFetch(`http://localhost:9999/api/v1/manuals/block/${blockId}`, {
+      await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/block/${blockId}`, {
         method: "DELETE",
       });
       
@@ -130,7 +130,7 @@ export default function SubsectionEditor({
     console.log('Block recibido del editor:', block); // Debug
 
     try {
-      const res = await backendAuthFetch("http://localhost:9999/api/v1/manuals/block", {
+      const res = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/block`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -164,7 +164,7 @@ export default function SubsectionEditor({
 
   const handleUpdateBlockContent = async (blockId: string, newContent: string) => {
     try {
-      const res = await backendAuthFetch(`http://localhost:9999/api/v1/manuals/block/${blockId}`, {
+      const res = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/block/${blockId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: newContent }),

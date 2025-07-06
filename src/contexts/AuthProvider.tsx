@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (refreshToken) {
         console.log("Intentando refrescar sesión con refreshToken:", refreshToken);
         try {
-          const response = await fetch("http://localhost:9999/api/v1/auth/refresh", {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/refresh`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ refreshToken }),
@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (firebaseUser) {
         try {
           const token = await firebaseUser.getIdToken();
-          const response = await fetch("http://localhost:9999/api/v1/auth/login", {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
           });

@@ -7,7 +7,7 @@ export const createManualSubsection = async (data: {
   position: 'before' | 'after';
 }) => {
   const response = await backendAuthFetch(
-    'http://localhost:5555/api/v1/manual/subsection',
+    `${import.meta.env.VITE_API_URL}/manual/subsection`,
     {
       method: "POST",
       headers: {

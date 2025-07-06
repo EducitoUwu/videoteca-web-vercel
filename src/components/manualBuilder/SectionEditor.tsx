@@ -28,7 +28,7 @@ export default function SectionEditor({ manualId, sections, setSections }: Secti
     try {
       const payload = { title: sectionTitle, manualId }; // Sin campo order
       
-      const res = await backendAuthFetch("http://localhost:9999/api/v1/manuals/section", {
+      const res = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/section`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -58,7 +58,7 @@ export default function SectionEditor({ manualId, sections, setSections }: Secti
     }
     
     try {
-      await backendAuthFetch(`http://localhost:9999/api/v1/manuals/section/${sectionId}`, {
+      await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/section/${sectionId}`, {
         method: "DELETE",
       });
       setSections(sections.filter(s => s.id !== sectionId));
@@ -70,7 +70,7 @@ export default function SectionEditor({ manualId, sections, setSections }: Secti
 
   const handleUpdateSectionTitle = async (sectionId: string, newTitle: string) => {
     try {
-      await backendAuthFetch(`http://localhost:9999/api/v1/manuals/section/${sectionId}`, {
+      await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/section/${sectionId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: newTitle }),

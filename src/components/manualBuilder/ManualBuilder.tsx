@@ -42,7 +42,7 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
   const loadExistingManual = async (id: string) => {
     setLoadingExisting(true);
     try {
-      const res = await backendAuthFetch(`http://localhost:9999/api/v1/manuals/${id}`);
+      const res = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/${id}`);
       if (!res.ok) {
         throw new Error("Manual no encontrado");
       }
