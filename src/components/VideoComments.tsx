@@ -1,9 +1,9 @@
 import { useState, useEffect, useContext } from 'react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
-import { Card, CardContent, CardHeader } from './ui/card';
+import { Card, CardContent} from './ui/card';
 import { Badge } from './ui/badge';
-import { Trash2, MessageCircle, Send, Heart, User } from 'lucide-react';
+import { Trash2, MessageCircle, Send, } from 'lucide-react';
 import { AuthContext } from '../contexts/AuthProvider';
 import videoCommentService, { VideoComment, CreateVideoCommentDto } from '../services/videoComment';
 
@@ -80,16 +80,6 @@ const VideoComments = ({ videoId }: VideoCommentsProps) => {
     return user && (user.role === 'administrador' || user.id === comment.userId);
   };
 
-  const getRoleBadgeStyle = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'estudiante':
-        return 'bg-green-100 text-green-800 border-green-200';
-      default:
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-    }
-  };
 
   const getRoleBadgeStyleDark = (role: string) => {
     switch (role) {

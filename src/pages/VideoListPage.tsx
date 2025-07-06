@@ -8,7 +8,7 @@ import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Skeleton } from '../components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
-import { Search, Plus, LogOut, ArrowLeft } from 'lucide-react';
+import { Search, Plus,  ArrowLeft } from 'lucide-react';
 import { AuthContext } from '../contexts/AuthProvider';
 import { Video } from '../types/video';
 import videoService from '../services/video';
@@ -24,7 +24,7 @@ const VideoListPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [expandedVideo, setExpandedVideo] = useState<Video | null>(null);
   const navigate = useNavigate();
-  const { user, logout, loading } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
 
   // Redirigir al login si no hay usuario y terminó de cargar
   useEffect(() => {
@@ -160,7 +160,7 @@ const VideoListPage = () => {
           <div className="block sm:hidden px-4 mb-6 relative z-10">
             <Select
               value={selectedCategory}
-              onValueChange={(value) => {
+              onValueChange={(value: string) => {
                 setSelectedCategory(value);
                 setExpandedVideo(null);
               }}
