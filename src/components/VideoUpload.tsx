@@ -355,7 +355,7 @@ const VideoUpload = () => {
                 </Label>
                 <Select
                   value={selectedCategory || ''}
-                  onValueChange={(value) => setSelectedCategory(value)}
+                  onValueChange={(value: string) => setSelectedCategory(value)}
                   disabled={loading}
                 >
                   <SelectTrigger className="bg-slate-700/50 border-blue-400/30 text-white backdrop-blur-sm rounded-xl">
