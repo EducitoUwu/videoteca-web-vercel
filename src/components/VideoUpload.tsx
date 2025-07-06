@@ -222,13 +222,13 @@ const VideoUpload = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 p-4 sm:p-6 relative">
       <Header />
       
-      {/* Efectos de fondo */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 -right-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+      {/* Efectos de fondo optimizados */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 -left-20 w-72 h-72 bg-blue-500/10 rounded-full blur-xl"></div>
+        <div className="absolute bottom-20 -right-20 w-72 h-72 bg-cyan-500/10 rounded-full blur-xl"></div>
       </div>
 
       <div className="max-w-2xl mx-auto relative z-10 pt-20">

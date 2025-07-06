@@ -25,24 +25,13 @@ const SelectionPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-800 to-black flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-800 to-black flex flex-col items-center justify-center p-4 relative">
       
-      {/* Efectos de fondo sutiles */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 -left-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 -right-20 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>
+      {/* Efectos de fondo optimizados */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 -left-20 w-72 h-72 bg-blue-500/8 rounded-full blur-xl"></div>
+        <div className="absolute bottom-20 -right-20 w-72 h-72 bg-cyan-500/8 rounded-full blur-xl"></div>
       </div>
-      
-      {/* Patrón de puntos */}
-      <div className="absolute inset-0 opacity-20" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='7' cy='7' r='1'/%3E%3Ccircle cx='53' cy='7' r='1'/%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3Ccircle cx='7' cy='53' r='1'/%3E%3Ccircle cx='53' cy='53' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-      }}></div>
-
-      {/* Grid de líneas */}
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)`,
-        backgroundSize: '50px 50px'
-      }}></div>
       
       <Header />
       <div className="w-full max-w-4xl mx-auto text-center mb-12 relative z-10">

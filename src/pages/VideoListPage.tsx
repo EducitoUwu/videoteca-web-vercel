@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -53,37 +53,27 @@ const VideoListPage = () => {
     fetchVideos();
   }, []);
 
-  // Filtrado combinado por categoría y búsqueda
-  const filteredVideos = videos.filter((video: any) => {
-    const matchesCategory =
-      selectedCategory === "Todas" ||
-      (video.category?.name || "Sin categoría") === selectedCategory;
-    const matchesSearch = video.title
-      .toLowerCase()
-      .includes(search.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  // Filtrado combinado por categoría y búsqueda optimizado con useMemo
+  const filteredVideos = useMemo(() => {
+    return videos.filter((video: any) => {
+      const matchesCategory =
+        selectedCategory === "Todas" ||
+        (video.category?.name || "Sin categoría") === selectedCategory;
+      const matchesSearch = video.title
+        .toLowerCase()
+        .includes(search.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [videos, selectedCategory, search]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 px-0 sm:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 px-0 sm:px-8 relative">
       
-      {/* Efectos de fondo sutiles */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 -left-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 -right-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
+      {/* Efectos de fondo optimizados */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 -left-20 w-80 h-80 bg-blue-500/15 rounded-full blur-2xl"></div>
+        <div className="absolute bottom-20 -right-20 w-80 h-80 bg-cyan-500/15 rounded-full blur-2xl"></div>
       </div>
-      
-      {/* Patrón de puntos */}
-      <div className="absolute inset-0 opacity-20" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='7' cy='7' r='1'/%3E%3Ccircle cx='53' cy='7' r='1'/%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3Ccircle cx='7' cy='53' r='1'/%3E%3Ccircle cx='53' cy='53' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-      }}></div>
-
-      {/* Grid de líneas */}
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)`,
-        backgroundSize: '50px 50px'
-      }}></div>
 
       <Header />
       
@@ -92,7 +82,7 @@ const VideoListPage = () => {
         <div className="fixed bottom-6 right-6 z-50">
           <Button 
             onClick={() => navigate("/upload-video")}
-            className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-110 border border-blue-400/30 backdrop-blur-sm"
+            className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-2xl hover:shadow-blue-500/25 transition-all duration-200 hover:scale-105 border border-blue-400/30 backdrop-blur-sm"
             title="Subir nuevo video"
           >
             <Plus className="w-7 h-7" />
@@ -229,7 +219,7 @@ const VideoListPage = () => {
                     {video.category?.name || "Sin categoría"}
                   </Badge>
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
                     <div className="w-0 h-0 border-l-8 border-l-white border-y-6 border-y-transparent ml-1"></div>
                   </div>
@@ -237,7 +227,7 @@ const VideoListPage = () => {
               </div>
               
               <CardHeader className="flex flex-col gap-3 p-6">
-                <CardTitle className="text-xl font-bold text-gray-100 group-hover:text-white transition-colors duration-300 leading-tight">
+                <CardTitle className="text-xl font-bold text-gray-100 group-hover:text-white transition-colors duration-200 leading-tight">
                   {video.title}
                 </CardTitle>
                 {video.description && (

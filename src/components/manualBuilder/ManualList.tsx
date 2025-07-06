@@ -103,7 +103,7 @@ export default function ManualList({ onSelect }: ManualListProps) {
             {manuals.map((manual, index) => (
               <Card
                 key={manual.id}
-                className="group cursor-pointer bg-black/40 backdrop-blur-xl border border-blue-500/30 shadow-xl hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 hover:border-blue-400/50 hover:scale-[1.02]"
+                className="group cursor-pointer bg-black/40 backdrop-blur-xl border border-blue-500/30 shadow-xl hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-200 hover:border-blue-400/50 hover:scale-[1.01]"
                 onClick={() => handleManualClick(manual.id)}
               >
                 <CardHeader className="p-6">
@@ -121,7 +121,7 @@ export default function ManualList({ onSelect }: ManualListProps) {
                       </p>
                     </div>
                     
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <Eye className="h-5 w-5 text-blue-400" />
                     </div>
                   </div>
@@ -146,7 +146,7 @@ export default function ManualList({ onSelect }: ManualListProps) {
           <div className="fixed bottom-8 right-8">
             <Button
               onClick={() => navigate("/upload-manual")}
-              className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-110 border border-blue-400/30 backdrop-blur-sm"
+              className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-2xl hover:shadow-blue-500/25 transition-all duration-200 hover:scale-105 border border-blue-400/30 backdrop-blur-sm"
               title="Crear nuevo manual"
             >
               <Plus className="h-7 w-7" />

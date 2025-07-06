@@ -66,7 +66,7 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
     
     setLoading(true);
     try {
-      const res = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/v1/manuals`, {
+      const res = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
