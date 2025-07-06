@@ -2,13 +2,18 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBU_6gEkoKrt0jUgOy0VeN0yRPFqR06fO8",
-    authDomain: "videoteca-enfermeria-dff21.firebaseapp.com",
-    projectId: "videoteca-enfermeria-dff21",
-    storageBucket: "videoteca-enfermeria-dff21.firebasestorage.app",
-    messagingSenderId: "246137394891",
-    appId: "1:246137394891:web:2e3f97bc7e970fff9fad4e"
-  };
+  apiKey: "AIzaSyBDIAZ1_Wb_HmHzlDUqT0BepqKT9qqI2Dg",
+  authDomain: "clinic-hub-e56fd.firebaseapp.com",
+  projectId: "clinic-hub-e56fd",
+  storageBucket: "clinic-hub-e56fd.firebasestorage.app",
+  messagingSenderId: "970655458951",
+  appId: "1:970655458951:web:3ac3992aba7d3a9f87ba22",
+  measurementId: "G-WVT19DT4EZ"
+};
+  
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+
+
+
