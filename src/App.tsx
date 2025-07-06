@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import React, { useContext } from "react";
+import { useContext, ReactNode } from "react";
 import { AuthProvider, AuthContext } from "./contexts/AuthProvider";
 
 import LoginPage from "./pages/LoginPage";
@@ -9,11 +9,11 @@ import UploadVideoPage from "./pages/UploadVideoPage";
 import ManualListPage from "./pages/ManualListPage";
 import UploadManualPage from "./pages/UploadManualPage";
 
-function ProtectedRoute({ children }: { children: JSX.Element }) {
+function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useContext(AuthContext);
   if (loading) return <div>Cargando...</div>;
   if (!user) return <Navigate to="/" />;
-  return children;
+  return <>{children}</>;
 }
 
 function App() {

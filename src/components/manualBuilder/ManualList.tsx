@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { backendAuthFetch } from "@/lib/utils";
-import { BookOpen, Plus, FileText, Eye, ArrowLeft, Edit3, Trash2 } from "lucide-react";
+import { BookOpen, Plus, FileText, Eye, ArrowLeft } from "lucide-react";
 import ManualViewer from "./ManualViewer";
 import { AuthContext } from "@/contexts/AuthProvider";
 import Header from "@/components/Header";
