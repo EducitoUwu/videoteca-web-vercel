@@ -27,23 +27,23 @@ const SelectionPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-800 to-black flex flex-col items-center justify-center p-4 relative">
       
-      {/* Efectos de fondo optimizados */}
+      {/* Efectos de fondo optimizados para móvil */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 -left-20 w-72 h-72 bg-blue-500/8 rounded-full blur-xl"></div>
-        <div className="absolute bottom-20 -right-20 w-72 h-72 bg-cyan-500/8 rounded-full blur-xl"></div>
+        <div className="absolute top-20 -left-20 w-48 sm:w-72 h-48 sm:h-72 bg-blue-500/6 sm:bg-blue-500/8 rounded-full blur-lg sm:blur-xl"></div>
+        <div className="absolute bottom-20 -right-20 w-48 sm:w-72 h-48 sm:h-72 bg-cyan-500/6 sm:bg-cyan-500/8 rounded-full blur-lg sm:blur-xl"></div>
       </div>
       
       <Header />
-      <div className="w-full max-w-4xl mx-auto text-center mb-12 relative z-10">
-        <h1 className="text-4xl md:text-5xl font-black mb-6 bg-gradient-to-r from-white via-blue-100 to-cyan-300 bg-clip-text text-transparent">
+      <div className="w-full max-w-2xl sm:max-w-4xl mx-auto text-center mb-8 sm:mb-12 relative z-10">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-black mb-4 sm:mb-6 bg-gradient-to-r from-white via-blue-100 to-cyan-300 bg-clip-text text-transparent leading-tight px-4">
           ¿Qué deseas visualizar?
         </h1>
-        <p className="text-gray-300 text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed">
+        <p className="text-gray-300 text-lg sm:text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed px-4">
           Selecciona una opción para comenzar tu experiencia de aprendizaje
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl relative z-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 w-full max-w-2xl md:max-w-4xl mx-auto px-4 relative z-10">
         <SelectionCard
           title="Manuales"
           description="Explora guías escritas paso a paso sobre temas clínicos con videos incluidos."

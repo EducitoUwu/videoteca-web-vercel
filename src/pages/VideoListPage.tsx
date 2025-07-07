@@ -67,25 +67,25 @@ const VideoListPage = () => {
   }, [videos, selectedCategory, search]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 px-0 sm:px-8 relative">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 px-2 sm:px-4 lg:px-8 relative">
       
-      {/* Efectos de fondo optimizados */}
+      {/* Efectos de fondo optimizados para móvil */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 -left-20 w-80 h-80 bg-blue-500/15 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-20 -right-20 w-80 h-80 bg-cyan-500/15 rounded-full blur-2xl"></div>
+        <div className="absolute top-20 -left-20 w-48 sm:w-80 h-48 sm:h-80 bg-blue-500/10 sm:bg-blue-500/15 rounded-full blur-lg sm:blur-2xl"></div>
+        <div className="absolute bottom-20 -right-20 w-48 sm:w-80 h-48 sm:h-80 bg-cyan-500/10 sm:bg-cyan-500/15 rounded-full blur-lg sm:blur-2xl"></div>
       </div>
 
       <Header />
       
       {/* Botón flotante para admins */}
       {user?.role === "administrador" && (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
           <Button 
             onClick={() => navigate("/upload-video")}
-            className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-2xl hover:shadow-blue-500/25 transition-all duration-200 hover:scale-105 border border-blue-400/30 backdrop-blur-sm"
+            className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-2xl hover:shadow-blue-500/25 transition-all duration-200 hover:scale-105 border border-blue-400/30 backdrop-blur-sm"
             title="Subir nuevo video"
           >
-            <Plus className="w-7 h-7" />
+            <Plus className="w-5 h-5 sm:w-7 sm:h-7" />
           </Button>
         </div>
       )}

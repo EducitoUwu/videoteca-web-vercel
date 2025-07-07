@@ -120,4 +120,39 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Mejoras para móviles */
+  html {
+    @apply text-sm sm:text-base;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Scroll suave para móviles */
+  * {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Mejor renderizado en móviles */
+  button, input, textarea, select {
+    @apply text-base;
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+  
+  /* Asegurar que los inputs no tengan zoom en iOS */
+  @media screen and (max-width: 767px) {
+    input, textarea, select {
+      font-size: 16px !important;
+    }
+  }
+}
+
+/* Utilidad para breakpoint extra pequeño */
+@media (min-width: 475px) {
+  .xs\:inline { display: inline; }
+  .xs\:hidden { display: none; }
+  .xs\:block { display: block; }
+  .xs\:flex { display: flex; }
 }

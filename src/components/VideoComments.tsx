@@ -136,17 +136,17 @@ const VideoComments = ({ videoId }: VideoCommentsProps) => {
   };
 
   return (
-    <div className="mt-8 space-y-6">
+    <div className="mt-6 sm:mt-8 space-y-4 sm:space-y-6">
       {/* Header de comentarios */}
-      <div className="flex items-center gap-4 pb-6 border-b border-blue-400/30">
-        <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
-          <MessageCircle className="w-7 h-7 text-white" />
+      <div className="flex items-center gap-3 sm:gap-4 pb-4 sm:pb-6 border-b border-blue-400/30">
+        <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25 flex-shrink-0">
+          <MessageCircle className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
         </div>
-        <div>
-          <h3 className="text-3xl font-black bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-xl sm:text-3xl font-black bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent break-words">
             Comentarios
           </h3>
-          <p className="text-sm text-gray-300 mt-1">
+          <p className="text-xs sm:text-sm text-gray-300 mt-1">
             {comments.length} {comments.length === 1 ? 'comentario' : 'comentarios'}
           </p>
         </div>
@@ -154,42 +154,44 @@ const VideoComments = ({ videoId }: VideoCommentsProps) => {
 
       {/* Formulario para nuevo comentario */}
       {user && (
-        <Card className="border-2 border-blue-400/30 bg-slate-800/70 backdrop-blur-xl shadow-2xl shadow-blue-500/10 rounded-2xl">
-          <CardContent className="p-6">
-            <div className="flex gap-4">
+        <Card className="border-2 border-blue-400/30 bg-slate-800/70 backdrop-blur-xl shadow-2xl shadow-blue-500/10 rounded-xl sm:rounded-2xl">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               {/* Avatar del usuario actual */}
-              <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg ${getAvatarColor(user.role)}`}>
+              <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-lg ${getAvatarColor(user.role)} flex-shrink-0`}>
                 {getInitials(user.fullName)}
               </div>
               
-              <div className="flex-1">
-                <form onSubmit={handleSubmitComment} className="space-y-4">
+              <div className="flex-1 min-w-0">
+                <form onSubmit={handleSubmitComment} className="space-y-3 sm:space-y-4">
                   <Textarea
                     placeholder="Comparte tu opinión sobre este video..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    className="min-h-[120px] resize-none border-2 border-blue-400/30 focus:border-blue-400/60 focus:ring-2 focus:ring-blue-400/20 bg-slate-700/50 text-white placeholder:text-gray-300 backdrop-blur-md rounded-xl"
+                    className="min-h-[100px] sm:min-h-[120px] resize-none border-2 border-blue-400/30 focus:border-blue-400/60 focus:ring-2 focus:ring-blue-400/20 bg-slate-700/50 text-white placeholder:text-gray-300 backdrop-blur-md rounded-lg sm:rounded-xl text-sm sm:text-base"
                     disabled={submitting}
                     maxLength={1000}
                   />
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-300 bg-slate-700/50 px-3 py-1 rounded-full border border-blue-400/20">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
+                    <span className="text-xs text-gray-300 bg-slate-700/50 px-2 sm:px-3 py-1 rounded-full border border-blue-400/20 text-center sm:text-left">
                       {newComment.length}/1000 caracteres
                     </span>
                     <Button
                       type="submit"
                       disabled={!newComment.trim() || submitting}
-                      className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-blue-500/25 transition-all duration-300 disabled:opacity-50 hover:scale-105"
+                      className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl shadow-lg hover:shadow-blue-500/25 transition-all duration-200 disabled:opacity-50 hover:scale-105 text-sm sm:text-base w-full sm:w-auto"
                     >
                       {submitting ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                          Enviando...
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          <span className="hidden sm:inline">Enviando...</span>
+                          <span className="sm:hidden">...</span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <Send className="w-4 h-4" />
-                          Publicar comentario
+                        <div className="flex items-center justify-center gap-2">
+                          <Send className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span className="hidden sm:inline">Publicar comentario</span>
+                          <span className="sm:hidden">Publicar</span>
                         </div>
                       )}
                     </Button>
@@ -202,50 +204,50 @@ const VideoComments = ({ videoId }: VideoCommentsProps) => {
       )}
 
       {/* Lista de comentarios */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {loading ? (
-          <div className="flex items-center justify-center py-16">
+          <div className="flex items-center justify-center py-12 sm:py-16">
             <div className="text-center">
-              <div className="w-12 h-12 border-4 border-blue-400/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-gray-300 font-medium">Cargando comentarios...</p>
+              <div className="w-8 h-8 sm:w-12 sm:h-12 border-4 border-blue-400/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-3 sm:mb-4"></div>
+              <p className="text-gray-300 font-medium text-sm sm:text-base">Cargando comentarios...</p>
             </div>
           </div>
         ) : comments.length === 0 ? (
-          <div className="text-center py-20 bg-slate-800/50 backdrop-blur-md rounded-2xl border-2 border-dashed border-blue-400/30">
-            <div className="w-20 h-20 bg-gradient-to-br from-slate-700 to-slate-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <MessageCircle className="w-10 h-10 text-gray-400" />
+          <div className="text-center py-12 sm:py-20 bg-slate-800/50 backdrop-blur-md rounded-xl sm:rounded-2xl border-2 border-dashed border-blue-400/30">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-slate-700 to-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              <MessageCircle className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
             </div>
-            <h4 className="text-xl font-bold text-gray-200 mb-3">No hay comentarios aún</h4>
+            <h4 className="text-lg sm:text-xl font-bold text-gray-200 mb-2 sm:mb-3">No hay comentarios aún</h4>
             {user ? (
-              <p className="text-gray-400 text-lg">¡Sé el primero en compartir tu opinión!</p>
+              <p className="text-gray-400 text-base sm:text-lg px-4">¡Sé el primero en compartir tu opinión!</p>
             ) : (
-              <p className="text-gray-400 text-lg">Inicia sesión para poder comentar</p>
+              <p className="text-gray-400 text-base sm:text-lg px-4">Inicia sesión para poder comentar</p>
             )}
           </div>
         ) : (
           comments.map((comment) => (
             <Card 
               key={comment.id} 
-              className="border-2 border-blue-400/20 hover:border-blue-400/40 shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 bg-slate-800/60 backdrop-blur-xl rounded-2xl"
+              className="border-2 border-blue-400/20 hover:border-blue-400/40 shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-200 bg-slate-800/60 backdrop-blur-xl rounded-xl sm:rounded-2xl"
             >
-              <CardContent className="p-6">
-                <div className="flex gap-4">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   {/* Avatar del comentarista */}
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg flex-shrink-0 ${getAvatarColor(comment.user?.role || 'user')}`}>
+                  <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-lg flex-shrink-0 ${getAvatarColor(comment.user?.role || 'user')}`}>
                     {getInitials(comment.user?.fullName || 'U')}
                   </div>
                   
                   {/* Contenido del comentario */}
                   <div className="flex-1 min-w-0">
                     {/* Header del comentario */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <h5 className="font-bold text-white text-lg">
+                    <div className="flex flex-col sm:flex-row items-start justify-between mb-3 sm:mb-4 gap-2 sm:gap-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                        <h5 className="font-bold text-white text-base sm:text-lg break-words">
                           {comment.user?.fullName || 'Usuario desconocido'}
                         </h5>
                         {comment.user?.role && (
-                          <Badge className={`text-xs px-3 py-1 rounded-full font-medium border backdrop-blur-sm ${getRoleBadgeStyleDark(comment.user.role)}`}>
-                            {comment.user.role === 'admin' ? '👑 Administrador' : 
+                          <Badge className={`text-xs px-2 sm:px-3 py-1 rounded-full font-medium border backdrop-blur-sm w-fit ${getRoleBadgeStyleDark(comment.user.role)}`}>
+                            {comment.user.role === 'admin' ? '👑 Admin' : 
                              comment.user.role === 'estudiante' ? '🎓 Estudiante' : '👤 Usuario'}
                           </Badge>
                         )}
@@ -257,29 +259,29 @@ const VideoComments = ({ videoId }: VideoCommentsProps) => {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteComment(comment.id)}
-                          className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 p-2 rounded-xl transition-colors duration-200"
+                          className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 p-1 sm:p-2 rounded-lg sm:rounded-xl transition-colors duration-200 self-end sm:self-auto"
                         >
-                          <Trash2 className="w-5 h-5" />
+                          <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                         </Button>
                       )}
                     </div>
                     
                     {/* Fecha del comentario */}
-                    <div className="mb-4">
-                      <span className="text-sm text-gray-300 bg-slate-700/50 px-3 py-1 rounded-full border border-blue-400/20">
+                    <div className="mb-3 sm:mb-4">
+                      <span className="text-xs sm:text-sm text-gray-300 bg-slate-700/50 px-2 sm:px-3 py-1 rounded-full border border-blue-400/20">
                         {formatDate(comment.createdAt)}
                       </span>
                     </div>
                     
                     {/* Texto del comentario */}
-                    <div className="mb-6 p-4 bg-slate-700/50 rounded-xl border border-blue-400/20 backdrop-blur-sm">
-                      <p className="text-gray-200 leading-relaxed whitespace-pre-wrap text-base">
+                    <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-slate-700/50 rounded-lg sm:rounded-xl border border-blue-400/20 backdrop-blur-sm">
+                      <p className="text-gray-200 leading-relaxed whitespace-pre-wrap text-sm sm:text-base break-words">
                         {comment.comment}
                       </p>
                     </div>
                     
                     
-                    <div className="flex items-center gap-4 pt-3 border-t border-blue-400/20">
+                    <div className="flex items-center gap-2 sm:gap-4 pt-2 sm:pt-3 border-t border-blue-400/20">
                       
                     </div>
                   </div>
