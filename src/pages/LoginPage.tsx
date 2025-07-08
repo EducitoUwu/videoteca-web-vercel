@@ -93,12 +93,12 @@ useEffect(() => {
                 Videoteca de
               </span>
               <span className="block bg-gradient-to-r from-cyan-300 via-blue-300 to-indigo-300 bg-clip-text text-transparent">
-                Enfermería UCN
+                Procedimientos Clínicos UCN
               </span>
             </h1>
             <p className="text-xl text-gray-300 max-w-md leading-relaxed">
               Tu plataforma integral de recursos educativos para la 
-              <span className="text-cyan-300 font-semibold"> excelencia en enfermería</span>
+              <span className="text-cyan-300 font-semibold"> excelencia en procedimientos clínicos</span>
             </p>
           </div>
 
@@ -161,7 +161,7 @@ useEffect(() => {
                   ¡Bienvenido!
                 </CardTitle>
                 <p className="text-gray-300 text-lg">
-                  Accede a tu videoteca de enfermería
+                  Accede a tu videoteca de procedimientos clínicos y recursos educativos.
                 </p>
               </div>
 
