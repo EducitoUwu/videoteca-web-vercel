@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { backendAuthFetch } from "@/lib/utils";
 import { Type, Video, Play, Save, X } from "lucide-react";
+import manualService from "@/services/manual";
 
 
 
@@ -37,6 +38,30 @@ export default function BlockEditor({
   // Para cargar videos al abrir el selector
   const [videos, setVideos] = useState<Video[]>([]);
   const [loadingVideos, setLoadingVideos] = useState(false);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+  const [loadingUrls, setLoadingUrls] = useState<Record<string, boolean>>({});
+
+  // Función para obtener URL firmada
+  const getSignedUrl = async (videoId: string) => {
+    if (signedUrls[videoId] || loadingUrls[videoId]) return signedUrls[videoId];
+    
+    setLoadingUrls(prev => ({ ...prev, [videoId]: true }));
+    try {
+      const url = await manualService.getVideoSignedUrl(videoId);
+      setSignedUrls(prev => ({ ...prev, [videoId]: url }));
+      return url;
+    } catch (error) {
+      console.error('Error getting signed URL:', error);
+      // Fallback a la URL original si falla
+      const video = videos.find(v => v.id === videoId);
+      if (video) {
+        setSignedUrls(prev => ({ ...prev, [videoId]: video.fileUrl }));
+        return video.fileUrl;
+      }
+    } finally {
+      setLoadingUrls(prev => ({ ...prev, [videoId]: false }));
+    }
+  };
 
   // Cargar videos al abrir el selector
   const handleOpenVideoSelector = () => {
@@ -48,10 +73,35 @@ export default function BlockEditor({
       .finally(() => setLoadingVideos(false));
   };
 
+  // Componente auxiliar para miniatura de video con URL firmada
+  const VideoThumbnail = ({ video }: { video: Video }) => {
+    const [thumbnailUrl, setThumbnailUrl] = useState<string>(video.fileUrl);
+    
+    useEffect(() => {
+      const loadSignedUrl = async () => {
+        const url = await getSignedUrl(video.id);
+        if (url) {
+          setThumbnailUrl(url);
+        }
+      };
+      loadSignedUrl();
+    }, [video.id]);
+
+    return (
+      <video 
+        src={thumbnailUrl} 
+        className="w-full sm:w-32 h-20 object-cover rounded-lg border border-purple-500/30 flex-shrink-0" 
+        preload="metadata"
+      />
+    );
+  };
+
   const handleSelectVideo = (vid: Video) => {
     console.log('Video seleccionado:', vid);
     setVideoId(vid.id);
-    setContent(vid.fileUrl); // Actualizar el contenido con la URL del video
+    // Para compatibilidad con el sistema actual, seguimos guardando la URL en content
+    // pero ahora usaremos el videoId para obtener URLs firmadas cuando sea necesario
+    setContent(vid.fileUrl); 
     console.log('Estableciendo content a:', vid.fileUrl);
     setShowVideoSelector(false);
   };
@@ -172,14 +222,10 @@ export default function BlockEditor({
                     {videos.length ? (
                       videos.map(video => (
                         <div key={video.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-purple-500/5 rounded-lg border border-purple-500/20 hover:border-purple-400/40 transition-all duration-200">
-                          <video 
-                            src={video.fileUrl} 
-                            className="w-full sm:w-32 h-20 object-cover rounded-lg border border-purple-500/30 flex-shrink-0" 
-                            preload="metadata"
-                          />
+                          <VideoThumbnail video={video} />
                           <div className="flex-1 min-w-0 w-full sm:w-auto">
                             <h3 className="text-purple-200 font-medium text-sm sm:text-base break-words">{video.title}</h3>
-                            <p className="text-purple-400 text-xs sm:text-sm break-all">{video.fileUrl}</p>
+                            <p className="text-purple-400 text-xs sm:text-sm break-all">ID: {video.id}</p>
                           </div>
                           <Button 
                             onClick={() => handleSelectVideo(video)}

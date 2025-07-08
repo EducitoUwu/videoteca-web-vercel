@@ -24,12 +24,14 @@ import {
 import { AuthContext } from '../../contexts/AuthProvider';
 import { backendAuthFetch } from '../../lib/utils';
 import videoService from '../../services/video';
+import manualService from '../../services/manual';
 import Header from '../Header';
 
 interface Block {
   id: string;
   type: "text" | "video";
   content: string;
+  videoId?: string;  // Para bloques de video
   order: number;
 }
 
@@ -440,19 +442,56 @@ function ModernSidebar({
 // Componente de bloque de video moderno
 function ModernVideoBlock({ 
   src, 
+  videoId,
   editMode, 
   onEdit, 
   onDelete 
 }: { 
-  src: string; 
+  src: string;
+  videoId?: string;
   editMode: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
 }) {
   const [playing, setPlaying] = useState(false);
+  const [signedUrl, setSignedUrl] = useState<string>(src);
+  const [loading, setLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Obtener URL firmada si tenemos videoId
+  useEffect(() => {
+    const getSignedUrl = async () => {
+      if (!videoId) return;
+      
+      setLoading(true);
+      try {
+        const url = await manualService.getVideoSignedUrl(videoId);
+        setSignedUrl(url);
+      } catch (error) {
+        console.error('Error getting signed URL:', error);
+        // Usar la URL original como fallback
+        setSignedUrl(src);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getSignedUrl();
+  }, [videoId, src]);
+
   if (!src) return null;
+
+  if (loading) {
+    return (
+      <div className="relative group mb-6">
+        <div className="bg-slate-800/60 backdrop-blur-sm rounded-2xl p-6 border border-blue-400/20">
+          <div className="w-full h-64 bg-gray-700 rounded-xl flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative group mb-6">
@@ -488,7 +527,7 @@ function ModernVideoBlock({
           >
             <video
               ref={videoRef}
-              src={src}
+              src={signedUrl}
               className="w-full h-64 object-cover rounded-xl"
               muted
               preload="metadata"
@@ -502,7 +541,7 @@ function ModernVideoBlock({
         ) : (
           <video
             ref={videoRef}
-            src={src}
+            src={signedUrl}
             controls
             autoPlay
             className="w-full rounded-xl"
@@ -580,6 +619,12 @@ export default function ManualViewer({
   const [videos, setVideos] = useState<Video[]>([]);
   const [showAddBlockDialog, setShowAddBlockDialog] = useState<{subsectionId: string} | null>(null);
   const [newBlockType, setNewBlockType] = useState<'text' | 'video'>('text');
+  
+  // Función auxiliar para obtener videoId a partir de la URL
+  const getVideoIdFromUrl = (url: string): string | undefined => {
+    const video = videos.find(v => v.fileUrl === url);
+    return video?.id;
+  };
   
   const { user } = useContext(AuthContext);
   const isAdmin = user?.role === "administrador";
@@ -881,6 +926,7 @@ export default function ManualViewer({
                           <ModernVideoBlock
                             key={block.id}
                             src={block.content}
+                            videoId={block.videoId || getVideoIdFromUrl(block.content)}
                             editMode={editMode}
                             onEdit={() => handleEditBlock(block.id, 'video', block.content)}
                             onDelete={() => handleDeleteBlock(block.id)}
