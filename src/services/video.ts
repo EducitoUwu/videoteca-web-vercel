@@ -12,5 +12,10 @@ const fetchVideoById = async ({ id }: { id: string }) => {
   return data.data || data;
 };
 
+const getVideoSignedUrl = async (videoId: string): Promise<string> => {
+  const response = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/videos/${videoId}/signed-url`);
+  const data = await response.json();
+  return data.data; // Retorna directamente la URL firmada
+};
 
-export default { fetchAllVideos, fetchVideoById };
+export default { fetchAllVideos, fetchVideoById, getVideoSignedUrl };

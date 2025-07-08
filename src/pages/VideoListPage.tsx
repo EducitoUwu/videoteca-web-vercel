@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useContext, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
@@ -23,6 +22,8 @@ const VideoListPage = () => {
   const [localLoading, setLocalLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedVideo, setExpandedVideo] = useState<Video | null>(null);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+  const [loadingUrls, setLoadingUrls] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
   const { user, loading } = useContext(AuthContext);
 
@@ -65,6 +66,65 @@ const VideoListPage = () => {
       return matchesCategory && matchesSearch;
     });
   }, [videos, selectedCategory, search]);
+
+  // Función para obtener URL firmada
+  const getSignedUrl = async (videoId: string) => {
+    if (signedUrls[videoId] || loadingUrls[videoId]) return signedUrls[videoId];
+    
+    setLoadingUrls(prev => ({ ...prev, [videoId]: true }));
+    try {
+      const url = await videoService.getVideoSignedUrl(videoId);
+      setSignedUrls(prev => ({ ...prev, [videoId]: url }));
+      return url;
+    } catch (error) {
+      console.error('Error getting signed URL:', error);
+      // Fallback a la URL original si falla
+      const video = videos.find(v => v.id === videoId);
+      if (video) {
+        setSignedUrls(prev => ({ ...prev, [videoId]: video.fileUrl }));
+        return video.fileUrl;
+      }
+    } finally {
+      setLoadingUrls(prev => ({ ...prev, [videoId]: false }));
+    }
+  };
+
+  // Función para abrir video con URL firmada
+  const openVideoInNewTab = async (video: Video) => {
+    const url = await getSignedUrl(video.id);
+    if (url) {
+      window.open(url, "_blank");
+    }
+  };
+
+  // Componente auxiliar para miniatura de video
+  const VideoThumbnail = ({ video }: { video: Video }) => {
+    const [thumbnailUrl, setThumbnailUrl] = useState<string>(video.fileUrl);
+    
+    useEffect(() => {
+      const loadSignedUrl = async () => {
+        const url = await getSignedUrl(video.id);
+        if (url) {
+          setThumbnailUrl(url);
+        }
+      };
+      loadSignedUrl();
+    }, [video.id]);
+
+    return (
+      <video
+        src={thumbnailUrl}
+        preload="metadata"
+        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        muted
+        playsInline
+        onMouseEnter={(e) => {
+          const video = e.target as HTMLVideoElement;
+          video.currentTime = 3; // Mostrar frame a los 3 segundos
+        }}
+      />
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 px-2 sm:px-4 lg:px-8 relative">
@@ -202,17 +262,7 @@ const VideoListPage = () => {
             >
               {/* Miniatura del video */}
               <div className="relative w-full h-48 bg-slate-800/50 overflow-hidden">
-                <video
-                  src={video.fileUrl}
-                  preload="metadata"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  muted
-                  playsInline
-                  onMouseEnter={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    video.currentTime = 3; // Mostrar frame a los 3 segundos
-                  }}
-                />
+                <VideoThumbnail video={video} />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
                 <div className="absolute top-3 left-3">
                   <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-1 rounded-full font-semibold shadow-lg">
@@ -277,9 +327,10 @@ const VideoListPage = () => {
                 <div className="flex gap-3 mb-8">
                   <Button
                     className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-4 px-8 rounded-xl flex-1 text-lg shadow-lg hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105"
-                    onClick={() => window.open(expandedVideo.fileUrl, "_blank")}
+                    onClick={() => openVideoInNewTab(expandedVideo)}
+                    disabled={loadingUrls[expandedVideo.id]}
                   >
-                    Ver video
+                    {loadingUrls[expandedVideo.id] ? "Cargando..." : "Ver video"}
                   </Button>
                 </div>
                 
