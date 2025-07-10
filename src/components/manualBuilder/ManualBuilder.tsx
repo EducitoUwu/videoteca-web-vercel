@@ -99,19 +99,44 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
   };
 
   const handleUpdateManualTitle = async () => {
-    if (!manualId || !manualTitle.trim()) return;
+    if (!manualId || !manualTitle.trim()) return true; // Si no hay cambios, considerar exitoso
     
     try {
-      await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/${manualId}`, {
+      // Intentar primero el endpoint /manuals/${manualId}
+      let response = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/${manualId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ title: manualTitle }),
       });
+      
+      // Si el endpoint no existe (404), intentar con /manuals/manual/${manualId}
+      if (response.status === 404) {
+        console.warn("Endpoint /manuals/${manualId} no encontrado, intentando ruta alternativa...");
+        response = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/manual/${manualId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ title: manualTitle }),
+        });
+      }
+      
+      if (!response.ok) {
+        console.warn(`Error ${response.status} al actualizar título del manual:`, response.statusText);
+        // No mostrar alerta aquí para no interrumpir el flujo de guardado principal
+        // Solo registrar el warning y continuar
+        return false;
+      }
+      
+      console.log("Título del manual actualizado exitosamente");
+      return true;
     } catch (err) {
       console.error("Error actualizando título del manual:", err);
-      alert("Error al actualizar el título del manual.");
+      // No mostrar alerta aquí para no interrumpir el flujo
+      // El error del título no debe impedir guardar el contenido
+      return false;
     }
   };
 
@@ -124,18 +149,26 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
     try {
       // Actualizar título si hay cambios
       if (manualTitle.trim()) {
-        await handleUpdateManualTitle();
-        // Delay después de actualizar título
+        const titleUpdated = await handleUpdateManualTitle();
+        if (!titleUpdated) {
+          console.warn("No se pudo actualizar el título del manual, pero continuando con el guardado del contenido...");
+        }
+        // Delay después de intentar actualizar título
         await new Promise(resolve => setTimeout(resolve, 500));
       }
       
       // Guardar secciones (que ahora también guarda subsecciones y bloques)
       const saveSections = (window as any)[`saveSections_${manualId}`];
       if (saveSections) {
-        const sectionsSuccess = await saveSections();
-        if (!sectionsSuccess) {
-          alert("Error al guardar el manual");
+        const sectionsResult = await saveSections();
+        if (!sectionsResult || sectionsResult === false) {
+          alert("Error crítico al guardar el manual. No se han guardado los cambios.");
           return;
+        } else if (sectionsResult === 'partial') {
+          // El proceso ya mostró las alertas correspondientes
+          console.log("Guardado parcial completado. Continuando con navegación...");
+        } else {
+          console.log("Guardado completamente exitoso.");
         }
       }
       

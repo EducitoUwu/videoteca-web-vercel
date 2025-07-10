@@ -87,7 +87,7 @@ export default function SectionEditor({ manualId, sections, setSections }: Secti
   const handleCreateSection = useCallback(() => {
     if (!sectionTitle.trim()) return;
     
-    const tempId = `temp-${Date.now()}`;
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newSection: Section = {
       id: tempId,
       title: sectionTitle,
@@ -124,6 +124,9 @@ export default function SectionEditor({ manualId, sections, setSections }: Secti
 
   // Función para guardar todo al backend (se llamará desde ManualBuilder)
   const saveToBackend = useCallback(async () => {
+    let hasErrors = false;
+    let errorDetails: string[] = [];
+    
     try {
       console.log('=== INICIANDO GUARDADO ===');
       console.log('Secciones a guardar:', sections);
@@ -189,37 +192,62 @@ export default function SectionEditor({ manualId, sections, setSections }: Secti
             let currentSubsectionId = subsection.id;
             
             // Solo crear subsecciones que tienen tempId (son nuevas)
-            if (subsection.tempId) {
+            if (subsection.tempId && (subsection.id === subsection.tempId || subsection.id.startsWith('temp-'))) {
               console.log(`Creando nueva subsección: ${subsection.title}`);
               const subsectionPayload = { title: subsection.title, sectionId: realSectionId };
               
-              const subsectionRes = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/subsection`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(subsectionPayload),
-              });
-              
-              if (!subsectionRes.ok) {
-                const errorText = await subsectionRes.text();
-                console.error(`Error creating subsection: ${subsectionRes.status} - ${subsectionRes.statusText}`, errorText);
-                throw new Error(`Error creating subsection: ${subsectionRes.statusText}`);
+              try {
+                const subsectionRes = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/subsection`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(subsectionPayload),
+                });
+                
+                if (!subsectionRes.ok) {
+                  const errorText = await subsectionRes.text();
+                  console.error(`Error creating subsection: ${subsectionRes.status} - ${subsectionRes.statusText}`, errorText);
+                  
+                  // Si el error es por llave duplicada, intentar buscar la subsección existente
+                  if (errorText.includes('llave duplicada') || errorText.includes('duplicate key')) {
+                    console.warn(`Subsección '${subsection.title}' posiblemente ya existe. Intentando continuar...`);
+                    hasErrors = true;
+                    errorDetails.push(`Subsección duplicada: ${subsection.title}`);
+                    // Generar un ID falso para continuar (el backend debería manejar esto mejor)
+                    currentSubsectionId = `fallback-${subsection.tempId}-${Date.now()}`;
+                  } else {
+                    hasErrors = true;
+                    errorDetails.push(`Error en subsección ${subsection.title}: ${subsectionRes.statusText}`);
+                    throw new Error(`Error creating subsection: ${subsectionRes.statusText}`);
+                  }
+                } else {
+                  const subsectionData = await subsectionRes.json();
+                  console.log(`Respuesta completa del backend para subsección:`, subsectionData);
+                  
+                  // Intentar varias formas de obtener el ID
+                  currentSubsectionId = subsectionData.data?.id || subsectionData.id || subsectionData.subsectionId || subsectionData.subsection?.id;
+                  
+                  console.log(`Subsección creada con ID real: ${currentSubsectionId}`);
+                  
+                  if (!currentSubsectionId) {
+                    console.error('No se pudo obtener el ID de la subsección creada. Estructura de respuesta:', subsectionData);
+                    // En lugar de fallar completamente, usar un ID de respaldo
+                    currentSubsectionId = `fallback-${subsection.tempId}-${Date.now()}`;
+                    console.warn(`Usando ID de respaldo: ${currentSubsectionId}`);
+                    hasErrors = true;
+                    errorDetails.push(`No se pudo obtener ID para subsección: ${subsection.title}`);
+                  }
+                }
+                
+                // Delay para evitar rate limiting
+                await delay(400);
+              } catch (error) {
+                console.error(`Error al crear subsección ${subsection.title}:`, error);
+                hasErrors = true;
+                errorDetails.push(`Error al crear subsección ${subsection.title}: ${error}`);
+                // Usar un ID de respaldo para continuar el proceso
+                currentSubsectionId = `error-${subsection.tempId}-${Date.now()}`;
+                console.warn(`Error recuperable. Continuando con ID de respaldo: ${currentSubsectionId}`);
               }
-              
-              const subsectionData = await subsectionRes.json();
-              console.log(`Respuesta completa del backend para subsección:`, subsectionData);
-              
-              // Intentar varias formas de obtener el ID
-              currentSubsectionId = subsectionData.data?.id || subsectionData.id || subsectionData.subsectionId || subsectionData.subsection?.id;
-              
-              console.log(`Subsección creada con ID real: ${currentSubsectionId}`);
-              
-              if (!currentSubsectionId) {
-                console.error('No se pudo obtener el ID de la subsección creada. Estructura de respuesta:', subsectionData);
-                throw new Error('No se pudo obtener el ID de la subsección creada');
-              }
-              
-              // Delay para evitar rate limiting
-              await delay(400);
             } else {
               console.log(`Usando subsección existente: ${subsection.id}`);
             }
@@ -232,7 +260,7 @@ export default function SectionEditor({ manualId, sections, setSections }: Secti
                 const block = subsection.blocks[i];
                 console.log(`Procesando bloque ${i}:`, block);
                 
-                if (block.tempId || block.id?.includes('temp_')) { // Solo crear bloques nuevos
+                if (block.tempId || block.id?.includes('temp') || block.id?.startsWith('temp-')) { // Solo crear bloques nuevos
                   console.log(`Creando nuevo bloque: ${block.type} - ${block.content?.substring(0, 50)}...`);
                   const blockPayload = {
                     type: block.type,
@@ -241,26 +269,37 @@ export default function SectionEditor({ manualId, sections, setSections }: Secti
                     order: i
                   };
                   
-                  const blockRes = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/block`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(blockPayload),
-                  });
-                  
-                  if (!blockRes.ok) {
-                    const errorText = await blockRes.text();
-                    console.error(`Error creating block: ${blockRes.status} - ${blockRes.statusText}`, errorText);
-                    console.error(`Block payload was:`, blockPayload);
-                    throw new Error(`Error creating block: ${blockRes.statusText}`);
-                  }                    const blockData = await blockRes.json();
-                    console.log(`Bloque creado exitosamente:`, blockData);
+                  try {
+                    const blockRes = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/block`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(blockPayload),
+                    });
+                    
+                    if (!blockRes.ok) {
+                      const errorText = await blockRes.text();
+                      console.error(`Error creating block: ${blockRes.status} - ${blockRes.statusText}`, errorText);
+                      console.error(`Block payload was:`, blockPayload);
+                      console.warn(`Error al crear bloque ${i}, pero continuando...`);
+                      hasErrors = true;
+                      errorDetails.push(`Error en bloque ${i} de subsección ${subsection.title}`);
+                    } else {
+                      const blockData = await blockRes.json();
+                      console.log(`Bloque creado exitosamente:`, blockData);
+                    }
                     
                     // Delay entre creación de bloques para evitar rate limiting
                     await delay(200);
-                  } else {
-                    console.log(`Saltando bloque existente: ${block.id}`);
+                  } catch (error) {
+                    console.error(`Error al crear bloque ${i}:`, error);
+                    console.warn(`Error recuperable en bloque ${i}. Continuando...`);
+                    hasErrors = true;
+                    errorDetails.push(`Error en bloque ${i} de subsección ${subsection.title}: ${error}`);
                   }
+                } else {
+                  console.log(`Saltando bloque existente: ${block.id}`);
                 }
+              }
             } else {
               console.log(`No hay bloques para guardar en subsección ${subsection.title}`);
             }
@@ -275,29 +314,42 @@ export default function SectionEditor({ manualId, sections, setSections }: Secti
       
       console.log('=== GUARDADO COMPLETADO ===');
       
-      // Limpiar localStorage después de guardar exitosamente
+      // Limpiar localStorage después de guardar (exitosamente o con errores parciales)
       localStorage.removeItem(`section-drafts-${manualId}`);
       sections.forEach(section => {
         localStorage.removeItem(`subsection-drafts-${section.id}`);
       });
       
-      return true;
+      // Reportar el resultado al usuario
+      if (hasErrors) {
+        console.warn('El guardado se completó con algunos errores:', errorDetails);
+        const errorSummary = errorDetails.length > 3 
+          ? `${errorDetails.slice(0, 3).join('\n')}\n... y ${errorDetails.length - 3} errores más.`
+          : errorDetails.join('\n');
+        
+        alert(`Guardado completado con advertencias:\n\n${errorSummary}\n\nRecomendamos revisar el manual y volver a guardarlo si es necesario.`);
+        return 'partial'; // Indica guardado parcial
+      }
+      
+      return true; // Indica guardado completamente exitoso
     } catch (error) {
-      console.error('Error saving sections:', error);
+      console.error('Error crítico saving sections:', error);
       
       // Mostrar error más específico al usuario
       if (error instanceof Error) {
         if (error.message.includes('Too Many Requests')) {
           alert('Error: Demasiadas peticiones al servidor. Por favor espera un momento e intenta nuevamente.');
         } else if (error.message.includes('subsection')) {
-          alert('Error al crear subsección: ' + error.message);
+          alert('Error crítico al crear subsección: ' + error.message + '\n\nEl proceso se ha detenido para evitar corrupciones.');
+        } else if (error.message.includes('section')) {
+          alert('Error crítico al crear sección: ' + error.message + '\n\nPor favor revisa la configuración del manual.');
         } else if (error.message.includes('block')) {
-          alert('Error al crear bloque: ' + error.message);
+          alert('Error crítico al crear bloque: ' + error.message);
         } else {
-          alert('Error al guardar: ' + error.message);
+          alert('Error crítico al guardar: ' + error.message + '\n\nPor favor intenta nuevamente o contacta soporte.');
         }
       } else {
-        alert('Error desconocido al guardar el manual');
+        alert('Error desconocido al guardar el manual. Por favor intenta nuevamente.');
       }
       
       return false;

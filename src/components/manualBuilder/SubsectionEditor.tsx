@@ -90,15 +90,16 @@ export default function SubsectionEditor({
     }
   }, [debouncedSubsections, setSubsectionDrafts]);
 
-  // Función para generar ID temporal
-  const generateTempId = () => `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // Función para generar ID temporal único
+  const generateTempId = () => `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   const handleCreate = () => {
     if (!title.trim()) return;
     
+    const tempId = generateTempId();
     const newSubsection: Subsection = {
-      id: generateTempId(),
-      tempId: generateTempId(),
+      id: tempId,
+      tempId: tempId, // Usar el mismo ID para evitar conflictos
       title: title.trim(),
       blocks: []
     };
@@ -145,10 +146,11 @@ export default function SubsectionEditor({
       return;
     }
 
+    const tempId = generateTempId();
     const newBlock: Block = {
       ...block,
-      id: generateTempId(),
-      tempId: generateTempId(),
+      id: tempId,
+      tempId: tempId, // Usar exactamente el mismo ID
       content: block.content.trim()
     };
 
