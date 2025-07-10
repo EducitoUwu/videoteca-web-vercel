@@ -7,7 +7,7 @@ import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Skeleton } from '../components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
-import { Search, Plus,  ArrowLeft } from 'lucide-react';
+import { Search, Plus, ArrowLeft, Trash2 } from 'lucide-react';
 import { AuthContext } from '../contexts/AuthProvider';
 import { Video } from '../types/video';
 import videoService from '../services/video';
@@ -94,6 +94,37 @@ const VideoListPage = () => {
     const url = await getSignedUrl(video.id);
     if (url) {
       window.open(url, "_blank");
+    }
+  };
+
+  // Función para eliminar video (solo administradores)
+  const handleDeleteVideo = async (video: Video) => {
+    const confirmDelete = window.confirm(
+      `¿Estás seguro de que quieres eliminar el video "${video.title}"?\n\nEsta acción no se puede deshacer.`
+    );
+    
+    if (!confirmDelete) return;
+
+    try {
+      setLoadingUrls(prev => ({ ...prev, [video.id]: true }));
+      await videoService.deleteVideo(video.id);
+      
+      // Actualizar la lista de videos eliminando el video borrado
+      setVideos(prev => prev.filter(v => v.id !== video.id));
+      
+      // Si el video expandido es el que se eliminó, cerrarlo
+      if (expandedVideo?.id === video.id) {
+        setExpandedVideo(null);
+      }
+      
+      // Mostrar mensaje de éxito (opcional)
+      alert("Video eliminado correctamente");
+      
+    } catch (error) {
+      console.error('Error deleting video:', error);
+      alert("Error al eliminar el video. Intenta nuevamente.");
+    } finally {
+      setLoadingUrls(prev => ({ ...prev, [video.id]: false }));
     }
   };
 
@@ -269,6 +300,25 @@ const VideoListPage = () => {
                     {video.category?.name || "Sin categoría"}
                   </Badge>
                 </div>
+                
+                {/* Botón eliminar para administradores */}
+                {user?.role === "administrador" && (
+                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="w-8 h-8 p-0 bg-red-600/90 hover:bg-red-700 backdrop-blur-sm border border-red-400/30 rounded-full shadow-lg"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Evitar que abra el video
+                        handleDeleteVideo(video);
+                      }}
+                      disabled={loadingUrls[video.id]}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+                
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
                     <div className="w-0 h-0 border-l-8 border-l-white border-y-6 border-y-transparent ml-1"></div>
@@ -332,6 +382,18 @@ const VideoListPage = () => {
                   >
                     {loadingUrls[expandedVideo.id] ? "Cargando..." : "Ver video"}
                   </Button>
+                  
+                  {/* Botón eliminar - Solo para administradores */}
+                  {user?.role === "administrador" && (
+                    <Button
+                      variant="destructive"
+                      className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 px-6 rounded-xl text-lg shadow-lg hover:shadow-red-500/30 transition-all duration-300 hover:scale-105"
+                      onClick={() => handleDeleteVideo(expandedVideo)}
+                      disabled={loadingUrls[expandedVideo.id]}
+                    >
+                      {loadingUrls[expandedVideo.id] ? "..." : "🗑️"}
+                    </Button>
+                  )}
                 </div>
                 
                 {/* Sección de comentarios */}

@@ -18,4 +18,14 @@ const getVideoSignedUrl = async (videoId: string): Promise<string> => {
   return data.data; // Retorna directamente la URL firmada
 };
 
-export default { fetchAllVideos, fetchVideoById, getVideoSignedUrl };
+const deleteVideo = async (videoId: string): Promise<void> => {
+  const response = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/videos/${videoId}`, {
+    method: 'DELETE'
+  });
+  
+  if (!response.ok) {
+    throw new Error('Error al eliminar el video');
+  }
+};
+
+export default { fetchAllVideos, fetchVideoById, getVideoSignedUrl, deleteVideo };
