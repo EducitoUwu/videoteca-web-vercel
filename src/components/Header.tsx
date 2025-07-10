@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { AuthContext } from "@/contexts/AuthProvider";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 // Utilidad para capitalizar solo la primera letra
 function capitalize(word: string) {
@@ -30,15 +31,19 @@ export default function Header() {
 
   return (
     <header
-      className="fixed top-2 sm:top-4 right-2 sm:right-4 z-50 flex items-center gap-2 sm:gap-4 bg-slate-900/80 backdrop-blur-lg shadow-2xl shadow-blue-500/20 rounded-lg sm:rounded-xl px-3 sm:px-6 py-2 sm:py-3 border border-blue-400/30 max-w-[calc(100vw-16px)] sm:max-w-none"
+      className="fixed top-2 sm:top-4 right-2 sm:right-4 z-50 flex items-center gap-2 sm:gap-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg shadow-xl shadow-slate-500/10 dark:shadow-blue-500/20 rounded-lg sm:rounded-xl px-3 sm:px-6 py-2 sm:py-3 border border-slate-200 dark:border-blue-400/30 max-w-[calc(100vw-16px)] sm:max-w-none transition-colors"
       style={{ minWidth: 0 }}
     >
-      <span className="font-semibold text-blue-200 text-sm sm:text-base truncate max-w-[120px] sm:max-w-xs">
+      <span className="font-medium text-slate-700 dark:text-blue-200 text-sm sm:text-base truncate max-w-[120px] sm:max-w-xs">
         {welcomeMessage}, {getShortName(user.fullName)}
       </span>
+      
+      {/* Toggle del tema */}
+      <ThemeToggle />
+      
       <Button
         variant="outline"
-        className="gap-1 sm:gap-2 bg-gradient-to-r from-red-500/20 to-red-600/20 border-red-400/30 text-red-200 hover:bg-red-500/30 hover:border-red-400/60 hover:text-white transition-all duration-200 backdrop-blur-sm text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
+        className="gap-1 sm:gap-2 bg-red-50 dark:bg-red-500/20 border-red-200 dark:border-red-400/30 text-red-600 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-500/30 hover:border-red-300 dark:hover:border-red-400/60 hover:text-red-700 dark:hover:text-white transition-all backdrop-blur-sm text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
         onClick={async () => {
           await logout();
           navigate("/");

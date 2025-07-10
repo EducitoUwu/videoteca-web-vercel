@@ -313,46 +313,46 @@ export default function SectionEditor({ manualId, sections, setSections }: Secti
   }, [saveToBackend, manualId]);
 
   return (
-    <Card className="bg-black/20 backdrop-blur-xl border border-blue-500/30 shadow-xl">
-      <CardHeader className="border-b border-blue-500/20 bg-gradient-to-r from-blue-600/10 to-purple-600/10 p-4 sm:p-6">
-        <CardTitle className="text-lg sm:text-xl font-bold text-blue-300 flex items-center gap-2 sm:gap-3">
-          <FileText className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+    <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-xl">
+      <CardHeader className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-6">
+        <CardTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+          <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400 flex-shrink-0" />
           <span className="min-w-0 break-words">Secciones del Manual</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3 sm:p-6">
-        <div className="flex flex-col sm:flex-row gap-3 mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-500/5 rounded-lg border border-blue-500/20">
+      <CardContent className="p-6">
+        <div className="flex flex-col sm:flex-row gap-3 mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800/50">
           <Input
             value={sectionTitle}
             onChange={(e) => setSectionTitle(e.target.value)}
-            placeholder="Titulo de la nueva seccion"
-            className="flex-1 bg-black/20 border-blue-500/30 text-white placeholder:text-gray-400 focus:border-blue-400 focus:ring-blue-400/20 text-sm sm:text-base"
+            placeholder="Título de la nueva sección"
+            className="flex-1 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500/20"
             onKeyDown={(e) => e.key === 'Enter' && handleCreateSection()}
           />
           <Button 
             onClick={handleCreateSection} 
             disabled={!sectionTitle.trim()}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 transition-all duration-200 text-sm sm:text-base w-full sm:w-auto"
+            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold px-6 py-2 transition-colors duration-200 w-full sm:w-auto"
           >
-            <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+            <Plus className="h-4 w-4 mr-2" />
             Agregar
           </Button>
         </div>
 
-        <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-4">
           {sections.length === 0 ? (
-            <div className="text-center py-8 sm:py-12 text-gray-400">
-              <FileText className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 opacity-50" />
-              <p className="text-base sm:text-lg font-medium">No hay secciones todavia</p>
-              <p className="text-xs sm:text-sm">Crea tu primera seccion para comenzar</p>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium">No hay secciones todavía</p>
+              <p className="text-sm">Crea tu primera sección para comenzar</p>
             </div>
           ) : (
             sections.map((section, index) => (
-              <Card key={section.id} className="bg-gradient-to-br from-slate-800/50 to-blue-900/30 backdrop-blur-xl border border-blue-500/20 shadow-lg hover:shadow-blue-500/10 transition-all duration-200">
-                <CardHeader className="border-b border-blue-500/20 p-3 sm:p-4">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 bg-blue-500/20 rounded-full flex-shrink-0">
-                      <span className="text-blue-300 font-bold text-xs sm:text-sm">{index + 1}</span>
+              <Card key={section.id} className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg hover:shadow-md transition-shadow duration-200">
+                <CardHeader className="border-b border-gray-200 dark:border-gray-700 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
+                      <span className="text-blue-600 dark:text-blue-400 font-semibold text-sm">{index + 1}</span>
                     </div>
                     
                     <Input
@@ -361,32 +361,32 @@ export default function SectionEditor({ manualId, sections, setSections }: Secti
                         const newTitle = e.target.value;
                         handleUpdateSectionTitle(section.id, newTitle);
                       }}
-                      className="flex-1 bg-transparent border-none text-base sm:text-lg font-bold text-blue-200 focus:ring-0 focus:border-none p-0 min-w-0"
-                      placeholder="Titulo de la seccion"
+                      className="flex-1 bg-transparent border-none text-lg font-semibold text-gray-900 dark:text-gray-100 focus:ring-0 focus:border-none p-0 min-w-0"
+                      placeholder="Título de la sección"
                     />
                     
-                    <div className="flex gap-1 sm:gap-2 flex-shrink-0">
+                    <div className="flex gap-2 flex-shrink-0">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setEditingId(editingId === section.id ? null : section.id)}
-                        className="text-blue-300 hover:text-blue-200 hover:bg-blue-500/10 p-1 sm:p-2"
+                        className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 p-2"
                       >
-                        <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <Edit3 className="h-4 w-4" />
                       </Button>
                       
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDeleteSection(section.id)}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-1 sm:p-2"
+                        className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 p-2"
                       >
-                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="p-3 sm:p-6">
+                <CardContent className="p-6">
                   <SubsectionEditor
                     sectionId={section.id}
                     subsections={section.subsections || []}

@@ -178,80 +178,81 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-2 sm:p-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
-      <div className="max-w-6xl mx-auto pt-16 sm:pt-20">
+      <div className="max-w-6xl mx-auto pt-24 px-4 sm:px-6 lg:px-8">
         {/* Botón de regresar */}
-        <div className="mb-4 sm:mb-6">
+        <div className="mb-8">
           <Button
             onClick={handleBackToList}
             variant="outline"
-            className="gap-2 bg-slate-800/60 border-blue-400/30 text-gray-300 hover:bg-blue-500/20 hover:border-blue-400/60 hover:text-white backdrop-blur-md rounded-xl px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-200"
+            className="gap-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 rounded-lg px-4 py-2"
           >
-            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+            <ArrowLeft className="h-4 w-4" />
             <span className="hidden xs:inline">Volver a manuales</span>
             <span className="xs:hidden">Volver</span>
           </Button>
         </div>
-        <Card className="bg-black/40 backdrop-blur-xl border border-blue-500/30 shadow-2xl shadow-blue-500/20">
-          <CardHeader className="border-b border-blue-500/20 bg-gradient-to-r from-blue-600/20 to-purple-600/20 p-4 sm:p-6">
-            <CardTitle className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent flex items-center gap-2 sm:gap-3">
-              <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400 flex-shrink-0" />
+        
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-xl">
+          <CardHeader className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-6">
+            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+              <BookOpen className="h-7 w-7 text-blue-600 dark:text-blue-400 flex-shrink-0" />
               <span className="min-w-0 break-words">
                 {loadingExisting 
-                  ? "📥 Cargando manual..." 
+                  ? "Cargando manual..." 
                   : manualId 
                     ? editId 
-                      ? "✏️ Editando Manual" 
-                      : "🛠️ Constructor de Manual"
+                      ? "Editando Manual" 
+                      : "Constructor de Manual"
                     : "Crear nuevo manual"
                 }
               </span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 sm:p-8">
+          <CardContent className="p-6">
             {loadingExisting ? (
-              <div className="flex items-center justify-center py-8 sm:py-12">
-                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-400"></div>
-                <span className="ml-3 text-blue-300 text-sm sm:text-base">Cargando datos del manual...</span>
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-300 dark:border-gray-600 border-t-blue-500"></div>
+                <span className="ml-3 text-gray-600 dark:text-gray-300">Cargando datos del manual...</span>
               </div>
             ) : !manualId ? (
-              <div className="flex flex-col gap-4 sm:gap-6 max-w-lg mx-auto">
-                <div className="space-y-2">
-                  <label className="text-blue-300 font-medium text-sm sm:text-base">Título del manual</label>
+              <div className="flex flex-col gap-6 max-w-lg mx-auto">
+                <div className="space-y-3">
+                  <label className="text-gray-700 dark:text-gray-300 font-medium">Título del manual</label>
                   <Input
                     type="text"
                     value={manualTitle}
                     placeholder="Ingresa el título del manual"
                     onChange={(e) => setManualTitle(e.target.value)}
-                    className="bg-black/20 border-blue-500/30 text-white placeholder:text-gray-400 focus:border-blue-400 focus:ring-blue-400/20 text-sm sm:text-base py-2 sm:py-3"
+                    className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500/20 py-3"
                     onKeyDown={(e) => e.key === 'Enter' && handleCreateManual()}
                   />
                 </div>
                 <Button 
                   onClick={handleCreateManual} 
                   disabled={!manualTitle.trim() || loading}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 sm:py-3 rounded-lg transition-all duration-200 disabled:opacity-50 text-sm sm:text-base"
+                  className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold py-3 rounded-lg transition-colors duration-200 disabled:opacity-50"
                 >
-                  <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  <Plus className="h-5 w-5 mr-2" />
                   {loading ? "Creando..." : "Crear Manual"}
                 </Button>
               </div>
             ) : (
-              <div className="space-y-4 sm:space-y-6">
+              <div className="space-y-6">
                 {/* Editor de título cuando estamos editando */}
                 {editId && (
-                  <Card className="bg-blue-500/5 border border-blue-500/20">
-                    <CardContent className="p-3 sm:p-4">
-                      <div className="space-y-2">
-                        <label className="text-blue-300 font-medium text-xs sm:text-sm">Título del manual</label>
+                  <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        <label className="text-blue-700 dark:text-blue-300 font-medium text-sm">Título del manual</label>
                         <Input
                           type="text"
                           value={manualTitle}
                           placeholder="Título del manual"
                           onChange={(e) => setManualTitle(e.target.value)}
                           onBlur={handleUpdateManualTitle}
-                          className="bg-black/20 border-blue-500/30 text-white placeholder:text-gray-400 focus:border-blue-400 focus:ring-blue-400/20 text-sm sm:text-base"
+                          className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500/20"
                         />
                       </div>
                     </CardContent>
@@ -264,13 +265,13 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
                   setSections={setSections}
                 />
                 
-                <div className="flex flex-wrap gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-blue-500/20">
+                <div className="flex flex-wrap gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
                   <Button
                     onClick={handleSaveAndExit}
                     disabled={loading}
-                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-200 text-sm sm:text-base"
+                    className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200"
                   >
-                    <Save className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                    <Save className="h-5 w-5 mr-2" />
                     <span className="hidden sm:inline">{loading ? "Guardando..." : "Guardar manual y salir"}</span>
                     <span className="sm:hidden">{loading ? "Guardando..." : "Guardar y salir"}</span>
                   </Button>
@@ -278,7 +279,7 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
                   <Button
                     onClick={handleBackToList}
                     variant="outline"
-                    className="border-gray-400/30 text-gray-300 hover:bg-gray-500/20 px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-200 text-sm sm:text-base"
+                    className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 px-6 py-3 rounded-lg transition-colors duration-200"
                   >
                     <span className="hidden sm:inline">Salir sin guardar</span>
                     <span className="sm:hidden">Salir</span>
