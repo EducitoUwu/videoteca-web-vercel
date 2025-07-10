@@ -202,6 +202,12 @@ const VideoUpload = () => {
       });
 
       const response: any = await uploadPromise;
+      
+      // Verificar que la respuesta sea válida
+      if (!response || !response.data || !response.data.fileUrl) {
+        throw new Error('Error: El servidor no devolvió una URL válida para el video');
+      }
+      
       setVideoUrl(response.data.fileUrl);
       
       // Limpiar formulario después del éxito
@@ -214,7 +220,23 @@ const VideoUpload = () => {
       
     } catch (error: any) {
       console.error('Error uploading video:', error);
-      setError(error.message || 'Error al subir el video. Intenta nuevamente.');
+      
+      // Manejo de errores específicos
+      let errorMessage = 'Error al subir el video. Intenta nuevamente.';
+      
+      if (error.message) {
+        if (error.message.includes('AWS') || error.message.includes('S3')) {
+          errorMessage = 'Error de configuración del servidor. Contacta al administrador.';
+        } else if (error.message.includes('timeout')) {
+          errorMessage = 'El video es muy grande o la conexión es lenta. Intenta con un archivo más pequeño.';
+        } else if (error.message.includes('URL válida')) {
+          errorMessage = error.message;
+        } else {
+          errorMessage = `Error: ${error.message}`;
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
       setIsSubmitting(false);
