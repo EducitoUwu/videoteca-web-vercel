@@ -7,7 +7,8 @@ import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Skeleton } from '../components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
-import { Search, Plus, ArrowLeft, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Search, Plus, ArrowLeft, Trash2, Play, X } from 'lucide-react';
 import { AuthContext } from '../contexts/AuthProvider';
 import { Video } from '../types/video';
 import videoService from '../services/video';
@@ -24,6 +25,9 @@ const VideoListPage = () => {
   const [expandedVideo, setExpandedVideo] = useState<Video | null>(null);
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const [loadingUrls, setLoadingUrls] = useState<Record<string, boolean>>({});
+  const [showVideoPlayer, setShowVideoPlayer] = useState(false);
+  const [videoToPlay, setVideoToPlay] = useState<Video | null>(null);
+  const [currentVideoUrl, setCurrentVideoUrl] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user, loading } = useContext(AuthContext);
 
@@ -89,12 +93,29 @@ const VideoListPage = () => {
     }
   };
 
-  // Función para abrir video con URL firmada
-  const openVideoInNewTab = async (video: Video) => {
-    const url = await getSignedUrl(video.id);
-    if (url) {
-      window.open(url, "_blank");
+  // Función para abrir video en modal reproductor
+  const openVideoPlayer = async (video: Video) => {
+    try {
+      setLoadingUrls(prev => ({ ...prev, [video.id]: true }));
+      const url = await getSignedUrl(video.id);
+      if (url) {
+        setVideoToPlay(video);
+        setCurrentVideoUrl(url);
+        setShowVideoPlayer(true);
+      }
+    } catch (error) {
+      console.error('Error getting video URL:', error);
+      alert('Error al cargar el video');
+    } finally {
+      setLoadingUrls(prev => ({ ...prev, [video.id]: false }));
     }
+  };
+
+  // Función para cerrar el reproductor
+  const closeVideoPlayer = () => {
+    setShowVideoPlayer(false);
+    setVideoToPlay(null);
+    setCurrentVideoUrl(null);
   };
 
   // Función para eliminar video (solo administradores)
@@ -320,8 +341,19 @@ const VideoListPage = () => {
                 )}
                 
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                    <div className="w-0 h-0 border-l-8 border-l-white border-y-6 border-y-transparent ml-1"></div>
+                  <div className="flex gap-2">
+                    {/* Botón de play para reproductor */}
+                    <Button
+                      size="lg"
+                      className="w-14 h-14 bg-blue-600/90 hover:bg-blue-700 backdrop-blur-sm rounded-full shadow-lg border border-blue-400/30"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openVideoPlayer(video);
+                      }}
+                      disabled={loadingUrls[video.id]}
+                    >
+                      <Play className="w-6 h-6 text-white" />
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -377,7 +409,7 @@ const VideoListPage = () => {
                 <div className="flex gap-3 mb-8">
                   <Button
                     className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-4 px-8 rounded-xl flex-1 text-lg shadow-lg hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105"
-                    onClick={() => openVideoInNewTab(expandedVideo)}
+                    onClick={() => openVideoPlayer(expandedVideo)}
                     disabled={loadingUrls[expandedVideo.id]}
                   >
                     {loadingUrls[expandedVideo.id] ? "Cargando..." : "Ver video"}
@@ -403,6 +435,60 @@ const VideoListPage = () => {
           </div>
         )}
       </div>
+
+      {/* Modal reproductor de video */}
+      <Dialog open={showVideoPlayer} onOpenChange={closeVideoPlayer}>
+        <DialogContent className="max-w-4xl w-full bg-slate-900/95 border-blue-400/30 backdrop-blur-xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-white flex items-center justify-between">
+              {videoToPlay?.title}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={closeVideoPlayer}
+                className="text-gray-400 hover:text-white hover:bg-slate-800/50 rounded-full p-2"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          
+          {videoToPlay && currentVideoUrl && (
+            <div className="w-full">
+              <video
+                controls
+                autoPlay
+                className="w-full h-auto max-h-[70vh] rounded-lg"
+                src={currentVideoUrl}
+                poster=""
+                preload="metadata"
+              >
+                Tu navegador no soporta la reproducción de videos.
+              </video>
+              
+              <div className="mt-4 space-y-2">
+                <p className="text-gray-300 text-sm">
+                  {videoToPlay.description || "Sin descripción"}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-1 rounded-full font-semibold">
+                    {videoToPlay.category?.name || "Sin categoría"}
+                  </Badge>
+                  <span className="text-gray-400 text-xs">
+                    Publicado el {new Date(videoToPlay.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {!currentVideoUrl && (
+            <div className="flex items-center justify-center h-64">
+              <p className="text-gray-400">Cargando video...</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
