@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import BlockEditor from "./Blockeditor";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,9 @@ interface Block {
   type: string;
   content?: string;
   videoId?: string;
+  tempId?: string;
 }
-interface Subsection { id: string; title: string; blocks: Block[] }
+interface Subsection { id: string; title: string; blocks: Block[]; tempId?: string; }
 
 interface SubsectionEditorProps {
   sectionId: string;
@@ -20,83 +21,110 @@ interface SubsectionEditorProps {
   setSubsections: (newSubsections: Subsection[]) => void;
 }
 
+// Helper function para delay entre peticiones
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Hook para localStorage
+const useLocalStorageDraft = (key: string, initialValue: any) => {
+  const [storedValue, setStoredValue] = useState(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+      return initialValue;
+    }
+  });
+
+  const setValue = useCallback((value: any) => {
+    try {
+      setStoredValue((prevValue: any) => {
+        const valueToStore = value instanceof Function ? value(prevValue) : value;
+        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        return valueToStore;
+      });
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+    }
+  }, [key]);
+
+  return [storedValue, setValue];
+};
+
+// Hook para debounce
+const useDebounce = (value: any, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
 export default function SubsectionEditor({
   sectionId,
   subsections,
   setSubsections
 }: SubsectionEditorProps) {
   const [title, setTitle] = useState("");
-  const [loading, setLoading] = useState(false);
   const [editingSubId, setEditingSubId] = useState<string | null>(null);
   const [showBlockEditor, setShowBlockEditor] = useState(false);
+  
+  // localStorage para drafts de subsecciones
+  const [, setSubsectionDrafts] = useLocalStorageDraft(`subsection-drafts-${sectionId}`, {});
+  
+  // Debounce para auto-guardado
+  const debouncedSubsections = useDebounce(subsections, 1000);
+  
+  // Auto-guardar en localStorage cuando cambien las subsecciones
+  useEffect(() => {
+    if (debouncedSubsections.length > 0) {
+      setSubsectionDrafts(debouncedSubsections);
+    }
+  }, [debouncedSubsections, setSubsectionDrafts]);
 
-  const handleCreate = async () => {
+  // Función para generar ID temporal
+  const generateTempId = () => `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+  const handleCreate = () => {
     if (!title.trim()) return;
     
-    setLoading(true);
-    try {
-      const payload = { title, sectionId }; // Sin campo order
-      
-      const res = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/subsection`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      
-      if (!res.ok) {
-        const errorData = await res.text();
-        console.error("Error response:", errorData);
-        throw new Error(`HTTP ${res.status}: ${errorData}`);
-      }
-      
-      const data = await res.json();
-      const newSubsection = data.data || data; // Manejar diferentes formatos de respuesta
-      setSubsections([...subsections, { ...newSubsection, blocks: [] }]);
-      setTitle("");
-    } catch (err) {
-      console.error("Error creando subsección:", err);
-      alert("Error al crear la subsección. Intenta de nuevo.");
-    } finally {
-      setLoading(false);
-    }
+    const newSubsection: Subsection = {
+      id: generateTempId(),
+      tempId: generateTempId(),
+      title: title.trim(),
+      blocks: []
+    };
+    
+    setSubsections([...subsections, newSubsection]);
+    setTitle("");
   };
 
-  const handleDeleteSubsection = async (subsectionId: string) => {
+  const handleDeleteSubsection = (subsectionId: string) => {
     if (!confirm("¿Estás seguro de que quieres eliminar esta subsección? Esta acción no se puede deshacer.")) {
       return;
     }
     
-    try {
-      await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/subsection/${subsectionId}`, {
-        method: "DELETE",
-      });
-      setSubsections(subsections.filter(s => s.id !== subsectionId));
-    } catch (err) {
-      console.error("Error eliminando subsección:", err);
-      alert("Error al eliminar la subsección.");
-    }
+    setSubsections(subsections.filter(s => s.id !== subsectionId));
   };
 
-  const handleDeleteBlock = async (blockId: string, subsectionId: string) => {
+  const handleDeleteBlock = (blockId: string, subsectionId: string) => {
     if (!confirm("¿Estás seguro de que quieres eliminar este bloque?")) {
       return;
     }
     
-    try {
-      await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/block/${blockId}`, {
-        method: "DELETE",
-      });
-      
-      // Actualizar la lista de bloques en la subsección
-      setSubsections(subsections.map(sub =>
-        sub.id === subsectionId
-          ? { ...sub, blocks: sub.blocks.filter(b => b.id !== blockId) }
-          : sub
-      ));
-    } catch (err) {
-      console.error("Error eliminando bloque:", err);
-      alert("Error al eliminar el bloque.");
-    }
+    setSubsections(subsections.map(sub =>
+      sub.id === subsectionId
+        ? { ...sub, blocks: sub.blocks.filter(b => (b.id || b.tempId) !== blockId) }
+        : sub
+    ));
   };
 
   const handleAddBlock = (subId: string) => {
@@ -104,10 +132,8 @@ export default function SubsectionEditor({
     setShowBlockEditor(true);
   };
 
-  const handleSaveBlock = async (block: Block) => {
+  const handleSaveBlock = (block: Block) => {
     if (!editingSubId) return;
-
-    const order = subsections.find((s) => s.id === editingSubId)?.blocks.length ?? 0;
 
     // Validar que el contenido no esté vacío
     if (!block.content || block.content.trim() === "") {
@@ -119,40 +145,19 @@ export default function SubsectionEditor({
       return;
     }
 
-    const payload = {
-      type: block.type,
-      content: block.content.trim(), // Asegurar que no esté vacío
-      subsectionId: editingSubId,
-      order, // El backend requiere este campo
+    const newBlock: Block = {
+      ...block,
+      id: generateTempId(),
+      tempId: generateTempId(),
+      content: block.content.trim()
     };
 
-    console.log('Enviando bloque:', payload); // Debug
-    console.log('Block recibido del editor:', block); // Debug
+    setSubsections(subsections.map(sub =>
+      sub.id === editingSubId
+        ? { ...sub, blocks: [...(sub.blocks || []), newBlock] }
+        : sub
+    ));
 
-    try {
-      const res = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/block`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      
-      if (!res.ok) {
-        const errorData = await res.text();
-        console.error("Error response:", errorData);
-        throw new Error(`HTTP ${res.status}: ${errorData}`);
-      }
-      
-      const data = await res.json();
-      const newBlock = data.data || data; // Manejar diferentes formatos de respuesta
-      setSubsections(subsections.map(sub =>
-        sub.id === editingSubId
-          ? { ...sub, blocks: [...(sub.blocks || []), newBlock] }
-          : sub
-      ));
-    } catch (err) {
-      console.error("Error guardando bloque:", err);
-      alert("Error al guardar el bloque. Intenta de nuevo.");
-    }
     setShowBlockEditor(false);
     setEditingSubId(null);
   };
@@ -162,24 +167,97 @@ export default function SubsectionEditor({
     setEditingSubId(null);
   };
 
-  const handleUpdateBlockContent = async (blockId: string, newContent: string) => {
-    try {
-      const res = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/block/${blockId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: newContent }),
-      });
-      
-      if (!res.ok) {
-        const errorData = await res.text();
-        console.error("Error response:", errorData);
-        throw new Error(`HTTP ${res.status}: ${errorData}`);
-      }
-    } catch (err) {
-      console.error("Error actualizando bloque:", err);
-      alert("Error al actualizar el bloque.");
-    }
+  const handleUpdateBlockContent = (blockId: string, newContent: string, subsectionId: string) => {
+    setSubsections(subsections.map(sub =>
+      sub.id === subsectionId
+        ? {
+            ...sub,
+            blocks: sub.blocks.map(block =>
+              (block.id || block.tempId) === blockId
+                ? { ...block, content: newContent }
+                : block
+            )
+          }
+        : sub
+    ));
   };
+
+  // Función para guardar al backend - será llamada desde ManualBuilder
+  const saveToBackend = async () => {
+    const results = [];
+    
+    for (const subsection of subsections) {
+      try {
+        // Solo crear subsecciones que tienen tempId (son nuevas)
+        if (subsection.tempId && !subsection.id.includes('temp_')) {
+          // Esta es una subsección que ya existe pero se modificó
+          continue;
+        }
+        
+        if (subsection.tempId) {
+          const payload = { title: subsection.title, sectionId };
+          
+          const res = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/subsection`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          
+          if (!res.ok) {
+            throw new Error(`Error creating subsection: ${res.statusText}`);
+          }
+          
+          const data = await res.json();
+          const createdSubsection = data.data || data;
+          
+          // Delay después de crear subsección
+          await delay(400);
+          
+          // Guardar bloques para esta subsección
+          for (let i = 0; i < subsection.blocks.length; i++) {
+            const block = subsection.blocks[i];
+            
+            if (block.tempId) { // Solo crear bloques nuevos
+              const blockPayload = {
+                type: block.type,
+                content: block.content,
+                subsectionId: createdSubsection.id,
+                order: i
+              };
+              
+              const blockRes = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/block`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(blockPayload),
+              });
+              
+              if (!blockRes.ok) {
+                throw new Error(`Error creating block: ${blockRes.statusText}`);
+              }
+              
+              // Delay entre creación de bloques
+              await delay(200);
+            }
+          }
+          
+          results.push(createdSubsection);
+        }
+      } catch (error) {
+        console.error('Error saving subsection:', error);
+        throw error;
+      }
+    }
+    
+    return results;
+  };
+
+  // Exponer la función saveToBackend para que ManualBuilder pueda llamarla
+  useEffect(() => {
+    (window as any)[`saveSubsections_${sectionId}`] = saveToBackend;
+    return () => {
+      delete (window as any)[`saveSubsections_${sectionId}`];
+    };
+  }, [saveToBackend, sectionId]);
 
   return (
     <div className="space-y-3 sm:space-y-4">
@@ -189,17 +267,16 @@ export default function SubsectionEditor({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Título de la nueva subsección"
-          disabled={loading}
           className="flex-1 bg-black/20 border-slate-600/30 text-white placeholder:text-gray-400 focus:border-purple-400 focus:ring-purple-400/20 text-sm sm:text-base"
           onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
         />
         <Button 
           onClick={handleCreate} 
-          disabled={!title.trim() || loading}
+          disabled={!title.trim()}
           className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 transition-all duration-200 text-sm sm:text-base w-full sm:w-auto"
         >
           <Plus className="h-4 w-4 mr-2" />
-          {loading ? "Creando..." : "Agregar"}
+          Agregar
         </Button>
       </div>
 
@@ -213,7 +290,7 @@ export default function SubsectionEditor({
           </div>
         ) : (
           subsections.map((subsection, subIndex) => (
-            <Card key={subsection.id} className="bg-gradient-to-br from-slate-800/40 to-purple-900/20 backdrop-blur-xl border border-purple-500/20 shadow-lg">
+            <Card key={subsection.id || subsection.tempId} className="bg-gradient-to-br from-slate-800/40 to-purple-900/20 backdrop-blur-xl border border-purple-500/20 shadow-lg">
               <CardHeader className="border-b border-purple-500/20 pb-2 sm:pb-3 p-3 sm:p-4">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 bg-purple-500/20 rounded-full flex-shrink-0">
@@ -239,7 +316,7 @@ export default function SubsectionEditor({
                 {/* Lista de bloques */}
                 <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
                   {(subsection.blocks || []).map((block, idx) => (
-                    <div key={block.id || idx} className="group p-2 sm:p-3 bg-black/20 rounded-lg border border-slate-600/30 hover:border-purple-400/30 transition-all duration-200">
+                    <div key={block.id || block.tempId || idx} className="group p-2 sm:p-3 bg-black/20 rounded-lg border border-slate-600/30 hover:border-purple-400/30 transition-all duration-200">
                       <div className="flex items-start gap-2 sm:gap-3">
                         {/* Icono del tipo de bloque */}
                         <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-purple-500/20 flex-shrink-0 mt-1">
@@ -255,19 +332,7 @@ export default function SubsectionEditor({
                           {block.type === "text" ? (
                             <textarea
                               value={block.content || ""}
-                              onChange={e => {
-                                const newBlocks = subsection.blocks.map((b, bidx) =>
-                                  bidx === idx ? { ...b, content: e.target.value } : b
-                                );
-                                setSubsections(subsections.map(s =>
-                                  s.id === subsection.id ? { ...s, blocks: newBlocks } : s
-                                ));
-                              }}
-                              onBlur={async (e) => {
-                                if (block.id && e.target.value.trim()) {
-                                  await handleUpdateBlockContent(block.id, e.target.value);
-                                }
-                              }}
+                              onChange={e => handleUpdateBlockContent(block.id || block.tempId!, e.target.value, subsection.id)}
                               className="w-full bg-transparent border-none text-white placeholder:text-gray-400 resize-none focus:ring-0 focus:outline-none text-xs sm:text-sm"
                               placeholder="Escribe el contenido del bloque..."
                               rows={Math.max(2, Math.ceil((block.content?.length || 0) / 80))}
@@ -291,7 +356,7 @@ export default function SubsectionEditor({
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDeleteBlock(block.id!, subsection.id)}
+                            onClick={() => handleDeleteBlock(block.id || block.tempId!, subsection.id)}
                             className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-6 w-6 sm:h-8 sm:w-8 p-0"
                           >
                             <Trash2 className="h-2 w-2 sm:h-3 sm:w-3" />

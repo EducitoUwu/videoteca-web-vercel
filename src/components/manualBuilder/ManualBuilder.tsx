@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useCallback } from "react";
 import SectionEditor from "./SectionEditor";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,14 +32,8 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
     }
   }, [user, isAdmin, navigate]);
 
-  // Cargar manual existente si se proporciona editId
-  useEffect(() => {
-    if (editId) {
-      loadExistingManual(editId);
-    }
-  }, [editId]);
-
-  const loadExistingManual = async (id: string) => {
+  // Función para cargar manual existente
+  const loadExistingManual = useCallback(async (id: string) => {
     setLoadingExisting(true);
     try {
       const res = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/${id}`);
@@ -59,7 +53,14 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
     } finally {
       setLoadingExisting(false);
     }
-  };
+  }, [navigate]);
+
+  // Cargar manual existente si se proporciona editId
+  useEffect(() => {
+    if (editId) {
+      loadExistingManual(editId);
+    }
+  }, [editId, loadExistingManual]);
 
   const handleCreateManual = async () => {
     if (!manualTitle.trim()) return;
@@ -115,9 +116,65 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
   };
 
 
-  // Volver al listado después de guardar/salir
+  // Función para guardar todo y volver al listado
+  const handleSaveAndExit = async () => {
+    if (!manualId) return;
+    
+    setLoading(true);
+    try {
+      // Actualizar título si hay cambios
+      if (manualTitle.trim()) {
+        await handleUpdateManualTitle();
+        // Delay después de actualizar título
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
+      // Guardar secciones (que ahora también guarda subsecciones y bloques)
+      const saveSections = (window as any)[`saveSections_${manualId}`];
+      if (saveSections) {
+        const sectionsSuccess = await saveSections();
+        if (!sectionsSuccess) {
+          alert("Error al guardar el manual");
+          return;
+        }
+      }
+      
+      // Limpiar localStorage después de guardar exitosamente
+      localStorage.removeItem(`manual-title-draft-${manualId}`);
+      localStorage.removeItem(`section-drafts-${manualId}`);
+      sections.forEach(section => {
+        localStorage.removeItem(`subsection-drafts-${section.id}`);
+      });
+      
+      // Solo navegar después de guardar exitosamente
+      navigate("/manuals");
+    } catch (error) {
+      console.error("Error saving manual:", error);
+      
+      // Manejo de errores más específico
+      if (error instanceof Error) {
+        if (error.message.includes('Too Many Requests')) {
+          alert("Error: Demasiadas peticiones al servidor. Espera un momento e intenta nuevamente.");
+        } else {
+          alert("Error al guardar el manual: " + error.message);
+        }
+      } else {
+        alert("Error desconocido al guardar el manual");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Volver sin guardar (con confirmación si hay cambios)
   const handleBackToList = () => {
-    navigate("/manuals");
+    if (sections.length > 0 || manualTitle.trim()) {
+      if (confirm("Tienes cambios sin guardar. Estas seguro de que quieres salir?")) {
+        navigate("/manuals");
+      }
+    } else {
+      navigate("/manuals");
+    }
   };
 
   return (
@@ -209,12 +266,22 @@ export default function ManualBuilder({ editId }: ManualBuilderProps) {
                 
                 <div className="flex flex-wrap gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-blue-500/20">
                   <Button
-                    onClick={handleBackToList}
+                    onClick={handleSaveAndExit}
+                    disabled={loading}
                     className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-200 text-sm sm:text-base"
                   >
                     <Save className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                    <span className="hidden sm:inline">Guardar manual y salir</span>
-                    <span className="sm:hidden">Guardar y salir</span>
+                    <span className="hidden sm:inline">{loading ? "Guardando..." : "Guardar manual y salir"}</span>
+                    <span className="sm:hidden">{loading ? "Guardando..." : "Guardar y salir"}</span>
+                  </Button>
+                  
+                  <Button
+                    onClick={handleBackToList}
+                    variant="outline"
+                    className="border-gray-400/30 text-gray-300 hover:bg-gray-500/20 px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-all duration-200 text-sm sm:text-base"
+                  >
+                    <span className="hidden sm:inline">Salir sin guardar</span>
+                    <span className="sm:hidden">Salir</span>
                   </Button>
                 </div>
               </div>

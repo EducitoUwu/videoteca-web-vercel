@@ -1,10 +1,4 @@
-import { useState, useEffect, useRef, useContext } from 'react';
-import { Button } from '../ui/button';
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle, } from '../ui/dialog';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { useState, useEffect, useContext, useRef, useMemo, useCallback, memo } from 'react';
 import { 
   Play, 
   Edit, 
@@ -21,11 +15,67 @@ import {
   Navigation,
   ArrowLeft
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AuthContext } from '../../contexts/AuthProvider';
 import { backendAuthFetch } from '../../lib/utils';
 import videoService from '../../services/video';
 import manualService from '../../services/manual';
 import Header from '../Header';
+
+// Hook personalizado para localStorage draft
+const useLocalStorageDraft = (key: string, initialValue: any) => {
+  const [storedValue, setStoredValue] = useState(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+      return initialValue;
+    }
+  });
+
+  const setValue = useCallback((value: any) => {
+    try {
+      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+    }
+  }, [key, storedValue]);
+
+  const clearValue = useCallback(() => {
+    try {
+      window.localStorage.removeItem(key);
+      setStoredValue(initialValue);
+    } catch (error) {
+      console.error('Error removing from localStorage:', error);
+    }
+  }, [key, initialValue]);
+
+  return [storedValue, setValue, clearValue];
+};
+
+// Hook para debounce
+const useDebounce = (value: any, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 interface Block {
   id: string;
@@ -61,8 +111,8 @@ interface Video {
   fileUrl: string;
 }
 
-// Componente de Sidebar moderno con funcionalidad de edición
-function ModernSidebar({
+// Componente de Sidebar moderno con funcionalidad de edición - Optimizado
+const ModernSidebar = memo(function ModernSidebar({
   manual,
   selectedSectionId,
   selectedSubsectionId,
@@ -84,37 +134,53 @@ function ModernSidebar({
   const [editValue, setEditValue] = useState('');
   const [showAddDialog, setShowAddDialog] = useState<{type: 'section' | 'subsection', parentId?: string} | null>(null);
   const [newItemTitle, setNewItemTitle] = useState('');
+  
+  // localStorage para drafts de edición
+  const [editDrafts, setEditDrafts] = useLocalStorageDraft('manual-edit-drafts', {});
+  
   const { user } = useContext(AuthContext);
-
   const isAdmin = user?.role === "administrador";
 
-  // Auto-expandir sección seleccionada
+  // Debounce para auto-guardar drafts
+  const debouncedEditValue = useDebounce(editValue, 500);
+  
   useEffect(() => {
-    if (selectedSectionId) {
-      setExpandedSections(prev => {
-        const newSet = new Set(prev);
-        newSet.add(selectedSectionId);
-        return newSet;
-      });
+    if (editingItem && debouncedEditValue) {
+      const draftKey = `${editingItem.type}-${editingItem.id}`;
+      setEditDrafts((prev: Record<string, any>) => ({
+        ...prev,
+        [draftKey]: debouncedEditValue
+      }));
     }
-  }, [selectedSectionId]);
+  }, [editingItem, debouncedEditValue, setEditDrafts]);
 
-  const toggleSection = (sectionId: string) => {
-    const newExpanded = new Set(expandedSections);
-    if (newExpanded.has(sectionId)) {
-      newExpanded.delete(sectionId);
-    } else {
-      newExpanded.add(sectionId);
-    }
-    setExpandedSections(newExpanded);
-  };
+  const toggleSection = useCallback((sectionId: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
+  }, []);
 
-  const handleEdit = (type: 'manual' | 'section' | 'subsection', id: string, currentTitle: string) => {
+  const handleEdit = useCallback((type: 'manual' | 'section' | 'subsection', id: string, currentTitle: string) => {
     setEditingItem({type, id});
-    setEditValue(currentTitle);
-  };
+    
+    // Restaurar draft si existe
+    const draftKey = `${type}-${id}`;
+    const draft = (editDrafts as Record<string, any>)[draftKey];
+    
+    if (draft && typeof draft === 'string') {
+      setEditValue(draft);
+    } else {
+      setEditValue(currentTitle);
+    }
+  }, [editDrafts]);
 
-  const handleSaveEdit = async () => {
+  const handleSaveEdit = useCallback(async () => {
     if (!editingItem || !editValue.trim()) return;
 
     try {
@@ -142,15 +208,23 @@ function ModernSidebar({
         body: JSON.stringify(body),
       });
 
+      // Limpiar draft después de guardar
+      const draftKey = `${editingItem.type}-${editingItem.id}`;
+      setEditDrafts((prev: Record<string, any>) => {
+        const newDrafts = {...prev};
+        delete newDrafts[draftKey];
+        return newDrafts;
+      });
+
       setEditingItem(null);
       setEditValue('');
       onUpdateManual();
     } catch (error) {
       console.error('Error updating item:', error);
     }
-  };
+  }, [editingItem, editValue, onUpdateManual, setEditDrafts]);
 
-  const handleDelete = async (type: 'section' | 'subsection', id: string) => {
+  const handleDelete = useCallback(async (type: 'section' | 'subsection', id: string) => {
     if (!confirm(`¿Estás seguro de que quieres eliminar esta ${type === 'section' ? 'sección' : 'subsección'}?`)) return;
 
     try {
@@ -160,9 +234,9 @@ function ModernSidebar({
     } catch (error) {
       console.error('Error deleting item:', error);
     }
-  };
+  }, [onUpdateManual]);
 
-  const handleAdd = async () => {
+  const handleAdd = useCallback(async () => {
     if (!showAddDialog || !newItemTitle.trim()) return;
 
     try {
@@ -198,9 +272,10 @@ function ModernSidebar({
     } catch (error) {
       console.error('Error adding item:', error);
     }
-  };
+  }, [showAddDialog, newItemTitle, manual, onUpdateManual]);
 
   if (!manual) return null;
+
   return (
     <aside className="w-80 min-h-screen bg-slate-900/95 backdrop-blur-xl border-r border-blue-400/20 text-white relative">
       {/* Header del manual */}
@@ -437,10 +512,10 @@ function ModernSidebar({
       </Dialog>
     </aside>
   );
-}
+});
 
-// Componente de bloque de video moderno
-function ModernVideoBlock({ 
+// Componente de bloque de video moderno - Optimizado
+const ModernVideoBlock = memo(function ModernVideoBlock({ 
   src, 
   videoId,
   editMode, 
@@ -458,26 +533,30 @@ function ModernVideoBlock({
   const [loading, setLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Obtener URL firmada si tenemos videoId
-  useEffect(() => {
-    const getSignedUrl = async () => {
-      if (!videoId) return;
-      
-      setLoading(true);
-      try {
-        const url = await manualService.getVideoSignedUrl(videoId);
-        setSignedUrl(url);
-      } catch (error) {
-        console.error('Error getting signed URL:', error);
-        // Usar la URL original como fallback
-        setSignedUrl(src);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getSignedUrl();
+  // Obtener URL firmada si tenemos videoId - memoizado
+  const getSignedUrl = useCallback(async () => {
+    if (!videoId) return;
+    
+    setLoading(true);
+    try {
+      const url = await manualService.getVideoSignedUrl(videoId);
+      setSignedUrl(url);
+    } catch (error) {
+      console.error('Error getting signed URL:', error);
+      setSignedUrl(src);
+    } finally {
+      setLoading(false);
+    }
   }, [videoId, src]);
+
+  useEffect(() => {
+    getSignedUrl();
+  }, [getSignedUrl]);
+
+  const handlePlay = useCallback(() => {
+    setPlaying(true);
+    setTimeout(() => videoRef.current?.play(), 100);
+  }, []);
 
   if (!src) return null;
 
@@ -520,10 +599,7 @@ function ModernVideoBlock({
         {!playing ? (
           <div
             className="relative cursor-pointer rounded-xl overflow-hidden group/video"
-            onClick={() => {
-              setPlaying(true);
-              setTimeout(() => videoRef.current?.play(), 100);
-            }}
+            onClick={handlePlay}
           >
             <video
               ref={videoRef}
@@ -550,10 +626,10 @@ function ModernVideoBlock({
       </div>
     </div>
   );
-}
+});
 
-// Componente de bloque de texto moderno
-function ModernTextBlock({ 
+// Componente de bloque de texto moderno - Optimizado
+const ModernTextBlock = memo(function ModernTextBlock({ 
   content, 
   editMode, 
   onEdit, 
@@ -594,9 +670,9 @@ function ModernTextBlock({
       </div>
     </div>
   );
-}
+});
 
-// Componente principal del viewer
+// Componente principal del viewer - Optimizado
 export default function ManualViewer({
   manualId,
   onEdit,
@@ -612,7 +688,7 @@ export default function ManualViewer({
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
-  // Estados para edición de bloques
+  // Estados para edición de bloques con localStorage para drafts
   const [editingBlock, setEditingBlock] = useState<{blockId: string, type: 'text' | 'video'} | null>(null);
   const [blockContent, setBlockContent] = useState('');
   const [selectedVideoId, setSelectedVideoId] = useState('');
@@ -620,19 +696,46 @@ export default function ManualViewer({
   const [showAddBlockDialog, setShowAddBlockDialog] = useState<{subsectionId: string} | null>(null);
   const [newBlockType, setNewBlockType] = useState<'text' | 'video'>('text');
   
-  // Función auxiliar para obtener videoId a partir de la URL
-  const getVideoIdFromUrl = (url: string): string | undefined => {
-    const video = videos.find(v => v.fileUrl === url);
-    return video?.id;
-  };
+  // localStorage para drafts de bloques
+  const [blockDrafts, setBlockDrafts] = useLocalStorageDraft(`manual-block-drafts-${manualId}`, {});
   
   const { user } = useContext(AuthContext);
   const isAdmin = user?.role === "administrador";
   const editMode = false; // Modo edición deshabilitado - solo "Editor avanzado" disponible
   const subsectionRefs = useRef<{ [subId: string]: HTMLDivElement | null }>({});
 
-  // Cargar manual
-  const loadManual = async () => {
+  // Memoizar videos para evitar re-renders innecesarios
+  const videoOptions = useMemo(() => 
+    videos.map(video => ({ id: video.id, title: video.title, fileUrl: video.fileUrl })),
+    [videos]
+  );
+
+  // Función auxiliar para obtener videoId a partir de la URL - memoizada
+  const getVideoIdFromUrl = useCallback((url: string): string | undefined => {
+    const video = videoOptions.find(v => v.fileUrl === url);
+    return video?.id;
+  }, [videoOptions]);
+
+  // Debounce para contenido de bloque
+  const debouncedBlockContent = useDebounce(blockContent, 500);
+
+  // Auto-guardar draft de bloque cuando cambia el contenido
+  useEffect(() => {
+    if (editingBlock && debouncedBlockContent) {
+      const draftKey = `${editingBlock.type}-${editingBlock.blockId}`;
+      setBlockDrafts((prev: Record<string, any>) => ({
+        ...prev,
+        [draftKey]: {
+          content: debouncedBlockContent,
+          videoId: selectedVideoId,
+          timestamp: Date.now()
+        }
+      }));
+    }
+  }, [editingBlock, debouncedBlockContent, selectedVideoId, setBlockDrafts]);
+
+  // Cargar manual - optimizado con useCallback
+  const loadManual = useCallback(async () => {
     try {
       setLoading(true);
       const response = await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/${manualId}`);
@@ -652,36 +755,37 @@ export default function ManualViewer({
     } finally {
       setLoading(false);
     }
-  };
+  }, [manualId, selectedSectionId]);
 
-  // Cargar videos para selector
-  const loadVideos = async () => {
+  // Cargar videos para selector - optimizado con useCallback
+  const loadVideos = useCallback(async () => {
     try {
       const data = await videoService.fetchAllVideos();
       setVideos(data);
     } catch (error) {
       console.error('Error loading videos:', error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadManual();
     loadVideos();
-  }, [manualId]);
+  }, [loadManual, loadVideos]);
 
-  // Auto-scroll a subsección seleccionada
+  // Auto-scroll a subsección seleccionada - optimizado
   useEffect(() => {
     if (selectedSubsectionId && subsectionRefs.current[selectedSubsectionId]) {
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         subsectionRefs.current[selectedSubsectionId]?.scrollIntoView({
           behavior: 'smooth',
           block: 'start',
         });
       }, 100);
+      return () => clearTimeout(timeoutId);
     }
   }, [selectedSubsectionId]);
 
-  // Efecto para expandir automáticamente secciones seleccionadas
+  // Efecto para expandir automáticamente secciones seleccionadas - optimizado
   useEffect(() => {
     if (selectedSectionId && manual) {
       const section = manual.sections.find(s => s.id === selectedSectionId);
@@ -695,30 +799,50 @@ export default function ManualViewer({
         }
       }
     }
-  }, [selectedSectionId, manual]);
+  }, [selectedSectionId, manual, selectedSubsectionId]);
 
-  // Handlers para bloques
-  const handleEditBlock = (blockId: string, type: 'text' | 'video', currentContent: string) => {
+  // Handlers para bloques - optimizados con useCallback
+  const handleEditBlock = useCallback((blockId: string, type: 'text' | 'video', currentContent: string) => {
     setEditingBlock({blockId, type});
-    setBlockContent(currentContent);
-    if (type === 'video') {
-      const video = videos.find(v => v.fileUrl === currentContent);
-      setSelectedVideoId(video?.id || '');
+    
+    // Restaurar draft si existe
+    const draftKey = `${type}-${blockId}`;
+    const draft = (blockDrafts as Record<string, any>)[draftKey];
+    
+    if (draft && draft.timestamp > Date.now() - 24 * 60 * 60 * 1000) { // 24 horas
+      setBlockContent(draft.content || currentContent);
+      if (type === 'video') {
+        setSelectedVideoId(draft.videoId || '');
+      }
+    } else {
+      setBlockContent(currentContent);
+      if (type === 'video') {
+        const video = videoOptions.find(v => v.fileUrl === currentContent);
+        setSelectedVideoId(video?.id || '');
+      }
     }
-  };
+  }, [blockDrafts, videoOptions]);
 
-  const handleSaveBlock = async () => {
+  const handleSaveBlock = useCallback(async () => {
     if (!editingBlock) return;
 
     try {
       const content = editingBlock.type === 'video' 
-        ? videos.find(v => v.id === selectedVideoId)?.fileUrl || ''
+        ? videoOptions.find(v => v.id === selectedVideoId)?.fileUrl || ''
         : blockContent;
 
       await backendAuthFetch(`${import.meta.env.VITE_API_URL}/manuals/block/${editingBlock.blockId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content }),
+      });
+
+      // Limpiar draft después de guardar
+      const draftKey = `${editingBlock.type}-${editingBlock.blockId}`;
+      setBlockDrafts((prev: Record<string, any>) => {
+        const newDrafts = {...prev};
+        delete newDrafts[draftKey];
+        return newDrafts;
       });
 
       setEditingBlock(null);
@@ -728,9 +852,9 @@ export default function ManualViewer({
     } catch (error) {
       console.error('Error updating block:', error);
     }
-  };
+  }, [editingBlock, blockContent, selectedVideoId, videoOptions, setBlockDrafts, loadManual]);
 
-  const handleDeleteBlock = async (blockId: string) => {
+  const handleDeleteBlock = useCallback(async (blockId: string) => {
     if (!confirm('¿Estás seguro de que quieres eliminar este bloque?')) return;
 
     try {
@@ -741,14 +865,14 @@ export default function ManualViewer({
     } catch (error) {
       console.error('Error deleting block:', error);
     }
-  };
+  }, [loadManual]);
 
-  const handleAddBlock = async () => {
+  const handleAddBlock = useCallback(async () => {
     if (!showAddBlockDialog) return;
 
     try {
       const content = newBlockType === 'video' 
-        ? videos.find(v => v.id === selectedVideoId)?.fileUrl || ''
+        ? videoOptions.find(v => v.id === selectedVideoId)?.fileUrl || ''
         : blockContent;
 
       if (!content.trim()) return;
@@ -768,6 +892,14 @@ export default function ManualViewer({
         }),
       });
 
+      // Limpiar draft del nuevo bloque
+      const draftKey = `new-${newBlockType}-${showAddBlockDialog.subsectionId}`;
+      setBlockDrafts((prev: Record<string, any>) => {
+        const newDrafts = {...prev};
+        delete newDrafts[draftKey];
+        return newDrafts;
+      });
+
       setShowAddBlockDialog(null);
       setBlockContent('');
       setSelectedVideoId('');
@@ -776,9 +908,23 @@ export default function ManualViewer({
     } catch (error) {
       console.error('Error adding block:', error);
     }
-  };
+  }, [showAddBlockDialog, newBlockType, blockContent, selectedVideoId, videoOptions, manual, setBlockDrafts, loadManual]);
 
-  const selectedSection = manual?.sections?.find(s => s.id === selectedSectionId) || manual?.sections?.[0];
+  // Memoizar sección seleccionada
+  const selectedSection = useMemo(() => 
+    manual?.sections?.find(s => s.id === selectedSectionId) || manual?.sections?.[0],
+    [manual?.sections, selectedSectionId]
+  );
+
+  // Funciones de navegación optimizadas
+  const handleSectionSelect = useCallback((sectionId: string) => {
+    setSelectedSectionId(sectionId);
+  }, []);
+
+  const handleSubsectionSelect = useCallback((sectionId: string, subId: string) => {
+    setSelectedSectionId(sectionId);
+    setSelectedSubsectionId(subId);
+  }, []);
 
   if (loading) {
     return (
@@ -849,220 +995,217 @@ export default function ManualViewer({
           <div className="absolute bottom-20 -right-20 w-72 h-72 bg-cyan-500/10 rounded-full blur-xl"></div>
         </div>
 
-      {/* Sidebar */}
-      {!sidebarCollapsed && (
-        <ModernSidebar
-          manual={manual}
-          selectedSectionId={selectedSectionId}
-          selectedSubsectionId={selectedSubsectionId}
-          onSectionSelect={setSelectedSectionId}
-          onSubsectionSelect={(sectionId: string, subId: string) => {
-            setSelectedSectionId(sectionId);
-            setSelectedSubsectionId(subId);
-          }}
-          editMode={editMode}
-          onUpdateManual={loadManual}
-        />
-      )}
+        {/* Sidebar */}
+        {!sidebarCollapsed && (
+          <ModernSidebar
+            manual={manual}
+            selectedSectionId={selectedSectionId}
+            selectedSubsectionId={selectedSubsectionId}
+            onSectionSelect={handleSectionSelect}
+            onSubsectionSelect={handleSubsectionSelect}
+            editMode={editMode}
+            onUpdateManual={loadManual}
+          />
+        )}
 
-      {/* Área principal de contenido */}
-      <main className="flex-1 relative z-10">
-        {/* Contenido */}
-        <div className="p-8 max-h-[calc(100vh-180px)] overflow-y-auto">
-          {selectedSection && selectedSection.subsections && selectedSection.subsections.length > 0 ? (
-            selectedSection.subsections.map((subsection) => (
-              <div
-                key={subsection.id}
-                ref={(el) => { subsectionRefs.current[subsection.id] = el; }}
-                className={`mb-12 transition-all duration-300 ${
-                  selectedSubsectionId === subsection.id 
-                    ? 'ring-2 ring-blue-400/30 bg-slate-800/20 rounded-2xl p-6' 
-                    : ''
-                }`}
-              >
-                {/* Header de subsección */}
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className={`text-2xl font-bold text-white flex items-center gap-3 transition-colors ${
-                    selectedSubsectionId === subsection.id ? 'text-blue-300' : ''
-                  }`}>
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                      selectedSubsectionId === subsection.id 
-                        ? 'bg-gradient-to-br from-blue-400 to-cyan-500' 
-                        : 'bg-gradient-to-br from-cyan-500 to-blue-600'
+        {/* Área principal de contenido */}
+        <main className="flex-1 relative z-10">
+          {/* Contenido */}
+          <div className="p-8 max-h-[calc(100vh-180px)] overflow-y-auto">
+            {selectedSection && selectedSection.subsections && selectedSection.subsections.length > 0 ? (
+              selectedSection.subsections.map((subsection) => (
+                <div
+                  key={subsection.id}
+                  ref={(el) => { subsectionRefs.current[subsection.id] = el; }}
+                  className={`mb-12 transition-all duration-300 ${
+                    selectedSubsectionId === subsection.id 
+                      ? 'ring-2 ring-blue-400/30 bg-slate-800/20 rounded-2xl p-6' 
+                      : ''
+                  }`}
+                >
+                  {/* Header de subsección */}
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className={`text-2xl font-bold text-white flex items-center gap-3 transition-colors ${
+                      selectedSubsectionId === subsection.id ? 'text-blue-300' : ''
                     }`}>
-                      <Navigation className="w-4 h-4 text-white" />
-                    </div>
-                    {subsection.title}
-                  </h2>
-                  
-                  {editMode && (
-                    <Button
-                      onClick={() => setShowAddBlockDialog({subsectionId: subsection.id})}
-                      variant="outline"
-                      size="sm"
-                      className="border-green-400/30 text-green-400 hover:bg-green-500/10"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Agregar bloque
-                    </Button>
-                  )}
-                </div>
-
-                {/* Bloques */}
-                <div className="space-y-4">
-                  {subsection.blocks && subsection.blocks.length > 0 ? (
-                    subsection.blocks
-                      .sort((a, b) => a.order - b.order)
-                      .map((block) => (
-                        block.type === 'text' ? (
-                          <ModernTextBlock
-                            key={block.id}
-                            content={block.content}
-                            editMode={editMode}
-                            onEdit={() => handleEditBlock(block.id, 'text', block.content)}
-                            onDelete={() => handleDeleteBlock(block.id)}
-                          />
-                        ) : (
-                          <ModernVideoBlock
-                            key={block.id}
-                            src={block.content}
-                            videoId={block.videoId || getVideoIdFromUrl(block.content)}
-                            editMode={editMode}
-                            onEdit={() => handleEditBlock(block.id, 'video', block.content)}
-                            onDelete={() => handleDeleteBlock(block.id)}
-                          />
-                        )
-                      ))
-                  ) : (
-                    <div className="text-center py-16 text-gray-400">
-                      <div className="w-20 h-20 mx-auto mb-6 bg-slate-800/60 rounded-full flex items-center justify-center">
-                        <FileText className="w-10 h-10 opacity-50" />
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                        selectedSubsectionId === subsection.id 
+                          ? 'bg-gradient-to-br from-blue-400 to-cyan-500' 
+                          : 'bg-gradient-to-br from-cyan-500 to-blue-600'
+                      }`}>
+                        <Navigation className="w-4 h-4 text-white" />
                       </div>
-                      <h3 className="text-lg font-semibold mb-2">Sin contenido disponible</h3>
-                      <p className="text-sm text-gray-500">Esta subsección aún no tiene bloques de contenido</p>
-                    </div>
-                  )}
+                      {subsection.title}
+                    </h2>
+                    
+                    {editMode && (
+                      <Button
+                        onClick={() => setShowAddBlockDialog({subsectionId: subsection.id})}
+                        variant="outline"
+                        size="sm"
+                        className="border-green-400/30 text-green-400 hover:bg-green-500/10"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Agregar bloque
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Bloques */}
+                  <div className="space-y-4">
+                    {subsection.blocks && subsection.blocks.length > 0 ? (
+                      subsection.blocks
+                        .sort((a, b) => a.order - b.order)
+                        .map((block) => (
+                          block.type === 'text' ? (
+                            <ModernTextBlock
+                              key={block.id}
+                              content={block.content}
+                              editMode={editMode}
+                              onEdit={() => handleEditBlock(block.id, 'text', block.content)}
+                              onDelete={() => handleDeleteBlock(block.id)}
+                            />
+                          ) : (
+                            <ModernVideoBlock
+                              key={block.id}
+                              src={block.content}
+                              videoId={block.videoId || getVideoIdFromUrl(block.content)}
+                              editMode={editMode}
+                              onEdit={() => handleEditBlock(block.id, 'video', block.content)}
+                              onDelete={() => handleDeleteBlock(block.id)}
+                            />
+                          )
+                        ))
+                    ) : (
+                      <div className="text-center py-16 text-gray-400">
+                        <div className="w-20 h-20 mx-auto mb-6 bg-slate-800/60 rounded-full flex items-center justify-center">
+                          <FileText className="w-10 h-10 opacity-50" />
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">Sin contenido disponible</h3>
+                        <p className="text-sm text-gray-500">Esta subsección aún no tiene bloques de contenido</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-20 text-gray-400">
-              <div className="w-24 h-24 mx-auto mb-8 bg-slate-800/60 rounded-full flex items-center justify-center">
-                <BookOpen className="w-12 h-12 opacity-50" />
-              </div>
-              <h3 className="text-2xl font-semibold mb-4 text-white">Sección sin subsecciones</h3>
-              <p className="text-gray-400 max-w-md mx-auto leading-relaxed">
-                Esta sección no tiene subsecciones definidas. {isAdmin ? 'Usa el "Editor avanzado" para añadir contenido.' : 'Contacta al administrador para añadir contenido.'}
-              </p>
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* Diálogos de edición */}
-      <Dialog open={!!editingBlock} onOpenChange={() => setEditingBlock(null)}>
-        <DialogContent className="bg-slate-800 border-blue-400/30 text-white max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              Editar bloque de {editingBlock?.type === 'text' ? 'texto' : 'video'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {editingBlock?.type === 'text' ? (
-              <Textarea
-                value={blockContent}
-                onChange={(e) => setBlockContent(e.target.value)}
-                placeholder="Contenido del bloque..."
-                className="min-h-[200px] bg-slate-700 border-blue-400/30 text-white"
-              />
+              ))
             ) : (
-              <Select value={selectedVideoId} onValueChange={setSelectedVideoId}>
+              <div className="text-center py-20 text-gray-400">
+                <div className="w-24 h-24 mx-auto mb-8 bg-slate-800/60 rounded-full flex items-center justify-center">
+                  <BookOpen className="w-12 h-12 opacity-50" />
+                </div>
+                <h3 className="text-2xl font-semibold mb-4 text-white">Sección sin subsecciones</h3>
+                <p className="text-gray-400 max-w-md mx-auto leading-relaxed">
+                  Esta sección no tiene subsecciones definidas. {isAdmin ? 'Usa el "Editor avanzado" para añadir contenido.' : 'Contacta al administrador para añadir contenido.'}
+                </p>
+              </div>
+            )}
+          </div>
+        </main>
+
+        {/* Diálogos de edición */}
+        <Dialog open={!!editingBlock} onOpenChange={() => setEditingBlock(null)}>
+          <DialogContent className="bg-slate-800 border-blue-400/30 text-white max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                Editar bloque de {editingBlock?.type === 'text' ? 'texto' : 'video'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {editingBlock?.type === 'text' ? (
+                <Textarea
+                  value={blockContent}
+                  onChange={(e) => setBlockContent(e.target.value)}
+                  placeholder="Contenido del bloque..."
+                  className="min-h-[200px] bg-slate-700 border-blue-400/30 text-white"
+                />
+              ) : (
+                <Select value={selectedVideoId} onValueChange={setSelectedVideoId}>
+                  <SelectTrigger className="bg-slate-700 border-blue-400/30 text-white">
+                    <SelectValue placeholder="Selecciona un video" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-gray-600">
+                    {videoOptions.map((video) => (
+                      <SelectItem key={video.id} value={video.id} className="text-white hover:bg-slate-700">
+                        {video.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <div className="flex gap-2 justify-end">
+                <Button variant="ghost" onClick={() => setEditingBlock(null)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSaveBlock}>
+                  Guardar cambios
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={!!showAddBlockDialog} onOpenChange={() => setShowAddBlockDialog(null)}>
+          <DialogContent className="bg-slate-800 border-blue-400/30 text-white max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Agregar nuevo bloque</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Select value={newBlockType} onValueChange={(value: 'text' | 'video') => setNewBlockType(value)}>
                 <SelectTrigger className="bg-slate-700 border-blue-400/30 text-white">
-                  <SelectValue placeholder="Selecciona un video" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-gray-600">
-                  {videos.map((video) => (
-                    <SelectItem key={video.id} value={video.id} className="text-white hover:bg-slate-700">
-                      {video.title}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="text" className="text-white hover:bg-slate-700">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      Bloque de texto
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="video" className="text-white hover:bg-slate-700">
+                    <div className="flex items-center gap-2">
+                      <VideoIcon className="w-4 h-4" />
+                      Bloque de video
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
-            )}
-            <div className="flex gap-2 justify-end">
-              <Button variant="ghost" onClick={() => setEditingBlock(null)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSaveBlock}>
-                Guardar cambios
-              </Button>
+
+              {newBlockType === 'text' ? (
+                <Textarea
+                  value={blockContent}
+                  onChange={(e) => setBlockContent(e.target.value)}
+                  placeholder="Contenido del bloque..."
+                  className="min-h-[200px] bg-slate-700 border-blue-400/30 text-white"
+                />
+              ) : (
+                <Select value={selectedVideoId} onValueChange={setSelectedVideoId}>
+                  <SelectTrigger className="bg-slate-700 border-blue-400/30 text-white">
+                    <SelectValue placeholder="Selecciona un video" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-gray-600">
+                    {videoOptions.map((video) => (
+                      <SelectItem key={video.id} value={video.id} className="text-white hover:bg-slate-700">
+                        {video.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              <div className="flex gap-2 justify-end">
+                <Button variant="ghost" onClick={() => setShowAddBlockDialog(null)}>
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={handleAddBlock}
+                  disabled={newBlockType === 'text' ? !blockContent.trim() : !selectedVideoId}
+                >
+                  Agregar bloque
+                </Button>
+              </div>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!showAddBlockDialog} onOpenChange={() => setShowAddBlockDialog(null)}>
-        <DialogContent className="bg-slate-800 border-blue-400/30 text-white max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Agregar nuevo bloque</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Select value={newBlockType} onValueChange={(value: 'text' | 'video') => setNewBlockType(value)}>
-              <SelectTrigger className="bg-slate-700 border-blue-400/30 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-gray-600">
-                <SelectItem value="text" className="text-white hover:bg-slate-700">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    Bloque de texto
-                  </div>
-                </SelectItem>
-                <SelectItem value="video" className="text-white hover:bg-slate-700">
-                  <div className="flex items-center gap-2">
-                    <VideoIcon className="w-4 h-4" />
-                    Bloque de video
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            {newBlockType === 'text' ? (
-              <Textarea
-                value={blockContent}
-                onChange={(e) => setBlockContent(e.target.value)}
-                placeholder="Contenido del bloque..."
-                className="min-h-[200px] bg-slate-700 border-blue-400/30 text-white"
-              />
-            ) : (
-              <Select value={selectedVideoId} onValueChange={setSelectedVideoId}>
-                <SelectTrigger className="bg-slate-700 border-blue-400/30 text-white">
-                  <SelectValue placeholder="Selecciona un video" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-gray-600">
-                  {videos.map((video) => (
-                    <SelectItem key={video.id} value={video.id} className="text-white hover:bg-slate-700">
-                      {video.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-
-            <div className="flex gap-2 justify-end">
-              <Button variant="ghost" onClick={() => setShowAddBlockDialog(null)}>
-                Cancelar
-              </Button>
-              <Button 
-                onClick={handleAddBlock}
-                disabled={newBlockType === 'text' ? !blockContent.trim() : !selectedVideoId}
-              >
-                Agregar bloque
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

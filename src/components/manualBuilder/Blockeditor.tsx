@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { backendAuthFetch } from "@/lib/utils";
@@ -42,73 +42,105 @@ export default function BlockEditor({
   const [loadingUrls, setLoadingUrls] = useState<Record<string, boolean>>({});
 
   // Función para obtener URL firmada
-  const getSignedUrl = async (videoId: string) => {
-    if (signedUrls[videoId] || loadingUrls[videoId]) return signedUrls[videoId];
+  const getSignedUrl = useCallback(async (videoId: string) => {
+    if (signedUrls[videoId]) return signedUrls[videoId];
+    if (loadingUrls[videoId]) return null;
     
     setLoadingUrls(prev => ({ ...prev, [videoId]: true }));
     try {
       const url = await manualService.getVideoSignedUrl(videoId);
       setSignedUrls(prev => ({ ...prev, [videoId]: url }));
+      setLoadingUrls(prev => ({ ...prev, [videoId]: false }));
       return url;
     } catch (error) {
       console.error('Error getting signed URL:', error);
+      setLoadingUrls(prev => ({ ...prev, [videoId]: false }));
+      
       // Fallback a la URL original si falla
       const video = videos.find(v => v.id === videoId);
       if (video) {
         setSignedUrls(prev => ({ ...prev, [videoId]: video.fileUrl }));
         return video.fileUrl;
       }
-    } finally {
-      setLoadingUrls(prev => ({ ...prev, [videoId]: false }));
+      return null;
     }
-  };
+  }, [signedUrls, loadingUrls, videos]);
 
   // Cargar videos al abrir el selector
   const handleOpenVideoSelector = () => {
     setShowVideoSelector(true);
-    setLoadingVideos(true);
-    backendAuthFetch(`${import.meta.env.VITE_API_URL}/videos`)
-      .then(res => res.json())
-      .then(data => setVideos(Array.isArray(data) ? data : data.data))
-      .finally(() => setLoadingVideos(false));
+    if (videos.length === 0) {
+      setLoadingVideos(true);
+      backendAuthFetch(`${import.meta.env.VITE_API_URL}/videos`)
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+          }
+          return res.json();
+        })
+        .then(data => {
+          const videoList = Array.isArray(data) ? data : (data.data || []);
+          setVideos(videoList);
+        })
+        .catch(error => {
+          console.error('Error loading videos:', error);
+          alert('Error al cargar los videos. Intenta de nuevo.');
+          setVideos([]);
+        })
+        .finally(() => setLoadingVideos(false));
+    }
   };
 
   // Componente auxiliar para miniatura de video con URL firmada
   const VideoThumbnail = ({ video }: { video: Video }) => {
     const [thumbnailUrl, setThumbnailUrl] = useState<string>(video.fileUrl);
+    const [isLoading, setIsLoading] = useState(false);
     
     useEffect(() => {
+      let mounted = true;
+      
       const loadSignedUrl = async () => {
-        const url = await getSignedUrl(video.id);
-        if (url) {
-          setThumbnailUrl(url);
+        if (isLoading) return;
+        
+        setIsLoading(true);
+        try {
+          const url = await getSignedUrl(video.id);
+          if (url && mounted) {
+            setThumbnailUrl(url);
+          }
+        } catch (error) {
+          console.error('Error loading signed URL for video:', video.id, error);
+        } finally {
+          if (mounted) {
+            setIsLoading(false);
+          }
         }
       };
+      
       loadSignedUrl();
-    }, [video.id]);
+      
+      return () => {
+        mounted = false;
+      };
+    }, [video.id, getSignedUrl]);
 
     return (
       <video 
         src={thumbnailUrl} 
         className="w-full sm:w-32 h-20 object-cover rounded-lg border border-purple-500/30 flex-shrink-0" 
         preload="metadata"
+        onError={() => console.log(`Error loading video: ${video.id}`)}
       />
     );
   };
 
   const handleSelectVideo = (vid: Video) => {
-    console.log('Video seleccionado:', vid);
     setVideoId(vid.id);
-    // Para compatibilidad con el sistema actual, seguimos guardando la URL en content
-    // pero ahora usaremos el videoId para obtener URLs firmadas cuando sea necesario
     setContent(vid.fileUrl); 
-    console.log('Estableciendo content a:', vid.fileUrl);
     setShowVideoSelector(false);
   };
 
   const handleSave = () => {
-    console.log('Estado actual:', { type, content, videoId });
-    
     if (type === "text") {
       if (!content.trim()) {
         alert("El contenido del texto no puede estar vacío");
@@ -117,12 +149,9 @@ export default function BlockEditor({
       onSave({ type, content: content.trim() });
     } else if (type === "video") {
       if (!videoId || !content) {
-        console.log('Validación fallida:', { videoId, content });
         alert("Debes seleccionar un video");
         return;
       }
-      // Para bloques de video, content ya contiene la URL del video
-      console.log('Guardando bloque de video:', { type, content, videoId });
       onSave({ type, content, videoId });
     }
   };
