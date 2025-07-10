@@ -277,12 +277,12 @@ const ModernSidebar = memo(function ModernSidebar({
   if (!manual) return null;
 
   return (
-    <aside className="w-80 min-h-screen bg-slate-900/95 backdrop-blur-xl border-r border-blue-400/20 text-white relative">
+    <aside className="w-80 min-h-screen bg-slate-50 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 relative">
       {/* Header del manual */}
-      <div className="p-6 border-b border-blue-400/20">
+      <div className="p-6 border-b border-slate-200 dark:border-slate-600">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center">
-            <BookOpen className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg flex items-center justify-center">
+            <BookOpen className="w-5 h-5 text-slate-600 dark:text-slate-300" />
           </div>
           <div className="flex-1">
             {editingItem?.type === 'manual' && editingItem.id === manual.id ? (
@@ -290,25 +290,25 @@ const ModernSidebar = memo(function ModernSidebar({
                 <Input
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
-                  className="bg-slate-800 border-blue-400/30 text-white text-sm"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 text-sm"
                   onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit()}
                 />
-                <Button size="sm" onClick={handleSaveEdit} className="px-2">
+                <Button size="sm" onClick={handleSaveEdit} className="px-2 bg-blue-600 hover:bg-blue-700 text-white">
                   <Save className="w-3 h-3" />
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => setEditingItem(null)} className="px-2">
+                <Button size="sm" variant="ghost" onClick={() => setEditingItem(null)} className="px-2 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
                   <X className="w-3 h-3" />
                 </Button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <h2 className="font-bold text-white truncate">{manual.title}</h2>
+                <h2 className="font-semibold text-slate-900 dark:text-slate-100 truncate">{manual.title}</h2>
                 {editMode && isAdmin && (
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => handleEdit('manual', manual.id, manual.title)}
-                    className="p-1 h-6 w-6 text-gray-400 hover:text-white"
+                    className="p-1 h-6 w-6 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                   >
                     <Edit className="w-3 h-3" />
                   </Button>
@@ -317,7 +317,7 @@ const ModernSidebar = memo(function ModernSidebar({
             )}
           </div>
         </div>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-slate-600 dark:text-slate-400">
           {manual.sections.length} {manual.sections.length === 1 ? 'sección' : 'secciones'}
         </p>
       </div>
@@ -331,16 +331,16 @@ const ModernSidebar = memo(function ModernSidebar({
           return (
             <div key={section.id} className="space-y-1">
               {/* Sección */}
-              <div className={`group flex items-center gap-2 p-3 rounded-xl transition-all duration-200 ${
+              <div className={`group flex items-center gap-3 p-3 rounded-lg transition-colors ${
                 isSelected 
-                  ? 'bg-blue-500/20 border border-blue-400/40' 
-                  : 'hover:bg-slate-800/60'
+                  ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700' 
+                  : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
               }`}>
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={() => toggleSection(section.id)}
-                  className="p-1 h-6 w-6 text-gray-400 hover:text-white"
+                  className="p-1 h-6 w-6 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                 >
                   {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                 </Button>
@@ -357,18 +357,18 @@ const ModernSidebar = memo(function ModernSidebar({
                       <Input
                         value={editValue}
                         onChange={(e) => setEditValue(e.target.value)}
-                        className="bg-slate-800 border-blue-400/30 text-white text-sm h-6"
+                        className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 text-sm h-6"
                         onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit()}
                       />
-                      <Button size="sm" onClick={handleSaveEdit} className="px-1 h-6">
+                      <Button size="sm" onClick={handleSaveEdit} className="px-1 h-6 bg-blue-600 hover:bg-blue-700 text-white">
                         <Save className="w-3 h-3" />
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setEditingItem(null)} className="px-1 h-6">
+                      <Button size="sm" variant="ghost" onClick={() => setEditingItem(null)} className="px-1 h-6 text-slate-600 dark:text-slate-400">
                         <X className="w-3 h-3" />
                       </Button>
                     </div>
                   ) : (
-                    <span className="text-sm font-medium text-gray-200 group-hover:text-white">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-slate-100">
                       {section.title}
                     </span>
                   )}
@@ -380,7 +380,7 @@ const ModernSidebar = memo(function ModernSidebar({
                       size="sm"
                       variant="ghost"
                       onClick={() => handleEdit('section', section.id, section.title)}
-                      className="p-1 h-6 w-6 text-gray-400 hover:text-blue-400"
+                      className="p-1 h-6 w-6 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
                     >
                       <Edit className="w-3 h-3" />
                     </Button>
@@ -388,7 +388,7 @@ const ModernSidebar = memo(function ModernSidebar({
                       size="sm"
                       variant="ghost"
                       onClick={() => setShowAddDialog({type: 'subsection', parentId: section.id})}
-                      className="p-1 h-6 w-6 text-gray-400 hover:text-green-400"
+                      className="p-1 h-6 w-6 text-slate-500 dark:text-slate-400 hover:text-green-600 dark:hover:text-green-400"
                     >
                       <Plus className="w-3 h-3" />
                     </Button>
@@ -396,7 +396,7 @@ const ModernSidebar = memo(function ModernSidebar({
                       size="sm"
                       variant="ghost"
                       onClick={() => handleDelete('section', section.id)}
-                      className="p-1 h-6 w-6 text-gray-400 hover:text-red-400"
+                      className="p-1 h-6 w-6 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400"
                     >
                       <Trash2 className="w-3 h-3" />
                     </Button>
@@ -411,10 +411,10 @@ const ModernSidebar = memo(function ModernSidebar({
                 return (
                   <div 
                     key={subsection.id}
-                    className={`group ml-8 flex items-center gap-2 p-2 rounded-lg transition-all duration-200 ${
+                    className={`group ml-8 flex items-center gap-3 p-2 rounded-lg transition-colors ${
                       isSubSelected 
-                        ? 'bg-cyan-500/20 border border-cyan-400/40' 
-                        : 'hover:bg-slate-800/40'
+                        ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700' 
+                        : 'hover:bg-slate-50 dark:hover:bg-slate-700/30'
                     }`}
                   >
                     <div 
@@ -426,18 +426,18 @@ const ModernSidebar = memo(function ModernSidebar({
                           <Input
                             value={editValue}
                             onChange={(e) => setEditValue(e.target.value)}
-                            className="bg-slate-800 border-blue-400/30 text-white text-xs h-5"
+                            className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 text-xs h-5"
                             onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit()}
                           />
-                          <Button size="sm" onClick={handleSaveEdit} className="px-1 h-5 text-xs">
+                          <Button size="sm" onClick={handleSaveEdit} className="px-1 h-5 text-xs bg-blue-600 hover:bg-blue-700 text-white">
                             <Save className="w-2 h-2" />
                           </Button>
-                          <Button size="sm" variant="ghost" onClick={() => setEditingItem(null)} className="px-1 h-5">
+                          <Button size="sm" variant="ghost" onClick={() => setEditingItem(null)} className="px-1 h-5 text-slate-600 dark:text-slate-400">
                             <X className="w-2 h-2" />
                           </Button>
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-300 group-hover:text-white">
+                        <span className="text-xs text-slate-600 dark:text-slate-300 group-hover:text-slate-800 dark:group-hover:text-slate-100">
                           {subsection.title}
                         </span>
                       )}
@@ -449,7 +449,7 @@ const ModernSidebar = memo(function ModernSidebar({
                           size="sm"
                           variant="ghost"
                           onClick={() => handleEdit('subsection', subsection.id, subsection.title)}
-                          className="p-1 h-5 w-5 text-gray-400 hover:text-blue-400"
+                          className="p-1 h-5 w-5 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
                         >
                           <Edit className="w-2 h-2" />
                         </Button>
@@ -457,7 +457,7 @@ const ModernSidebar = memo(function ModernSidebar({
                           size="sm"
                           variant="ghost"
                           onClick={() => handleDelete('subsection', subsection.id)}
-                          className="p-1 h-5 w-5 text-gray-400 hover:text-red-400"
+                          className="p-1 h-5 w-5 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400"
                         >
                           <Trash2 className="w-2 h-2" />
                         </Button>
@@ -475,7 +475,7 @@ const ModernSidebar = memo(function ModernSidebar({
           <Button
             onClick={() => setShowAddDialog({type: 'section'})}
             variant="ghost"
-            className="w-full justify-start gap-2 mt-4 text-gray-400 hover:text-white hover:bg-slate-800/60"
+            className="w-full justify-start gap-2 mt-4 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50"
           >
             <Plus className="w-4 h-4" />
             Agregar sección
@@ -485,7 +485,7 @@ const ModernSidebar = memo(function ModernSidebar({
 
       {/* Dialog para agregar elementos */}
       <Dialog open={!!showAddDialog} onOpenChange={() => setShowAddDialog(null)}>
-        <DialogContent className="bg-slate-800 border-blue-400/30 text-white">
+        <DialogContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100">
           <DialogHeader>
             <DialogTitle>
               Agregar nueva {showAddDialog?.type === 'section' ? 'sección' : 'subsección'}
@@ -496,14 +496,14 @@ const ModernSidebar = memo(function ModernSidebar({
               placeholder={`Título de la ${showAddDialog?.type === 'section' ? 'sección' : 'subsección'}`}
               value={newItemTitle}
               onChange={(e) => setNewItemTitle(e.target.value)}
-              className="bg-slate-700 border-blue-400/30 text-white"
+              className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
               onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
             />
             <div className="flex gap-2 justify-end">
-              <Button variant="ghost" onClick={() => setShowAddDialog(null)}>
+              <Button variant="ghost" onClick={() => setShowAddDialog(null)} className="text-slate-600 dark:text-slate-400">
                 Cancelar
               </Button>
-              <Button onClick={handleAdd} disabled={!newItemTitle.trim()}>
+              <Button onClick={handleAdd} disabled={!newItemTitle.trim()} className="bg-blue-600 hover:bg-blue-700 text-white">
                 Agregar
               </Button>
             </div>
@@ -563,9 +563,9 @@ const ModernVideoBlock = memo(function ModernVideoBlock({
   if (loading) {
     return (
       <div className="relative group mb-6">
-        <div className="bg-slate-800/60 backdrop-blur-sm rounded-2xl p-6 border border-blue-400/20">
-          <div className="w-full h-64 bg-gray-700 rounded-xl flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-6">
+          <div className="w-full h-64 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
           </div>
         </div>
       </div>
@@ -575,12 +575,12 @@ const ModernVideoBlock = memo(function ModernVideoBlock({
   return (
     <div className="relative group mb-6">
       {editMode && (
-        <div className="absolute top-2 right-2 z-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-3 right-3 z-10 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             size="sm"
             variant="ghost"
             onClick={onEdit}
-            className="bg-slate-800/90 text-blue-400 hover:text-blue-300 p-2"
+            className="bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 p-2 border border-slate-200 dark:border-slate-600"
           >
             <Edit className="w-4 h-4" />
           </Button>
@@ -588,28 +588,28 @@ const ModernVideoBlock = memo(function ModernVideoBlock({
             size="sm"
             variant="ghost"
             onClick={onDelete}
-            className="bg-slate-800/90 text-red-400 hover:text-red-300 p-2"
+            className="bg-white dark:bg-slate-800 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-2 border border-slate-200 dark:border-slate-600"
           >
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
       )}
       
-      <div className="bg-slate-800/60 backdrop-blur-sm rounded-2xl p-6 border border-blue-400/20">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-6">
         {!playing ? (
           <div
-            className="relative cursor-pointer rounded-xl overflow-hidden group/video"
+            className="relative cursor-pointer rounded-lg overflow-hidden group/video"
             onClick={handlePlay}
           >
             <video
               ref={videoRef}
               src={signedUrl}
-              className="w-full h-64 object-cover rounded-xl"
+              className="w-full h-64 object-cover rounded-lg"
               muted
               preload="metadata"
             />
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover/video:bg-black/30 transition-colors">
-              <div className="bg-blue-500/90 backdrop-blur-sm rounded-full p-4 border-2 border-white/30 group-hover/video:scale-110 transition-transform">
+              <div className="bg-blue-600 hover:bg-blue-700 rounded-full p-4 border-2 border-white/30 group-hover/video:scale-105 transition-transform">
                 <Play className="w-8 h-8 text-white ml-1" />
               </div>
             </div>
@@ -620,7 +620,7 @@ const ModernVideoBlock = memo(function ModernVideoBlock({
             src={signedUrl}
             controls
             autoPlay
-            className="w-full rounded-xl"
+            className="w-full rounded-lg"
           />
         )}
       </div>
@@ -648,7 +648,7 @@ const ModernTextBlock = memo(function ModernTextBlock({
             size="sm"
             variant="ghost"
             onClick={onEdit}
-            className="bg-slate-800/90 text-blue-400 hover:text-blue-300 p-2"
+            className="bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 p-2 border border-slate-200 dark:border-slate-600"
           >
             <Edit className="w-4 h-4" />
           </Button>
@@ -656,15 +656,15 @@ const ModernTextBlock = memo(function ModernTextBlock({
             size="sm"
             variant="ghost"
             onClick={onDelete}
-            className="bg-slate-800/90 text-red-400 hover:text-red-300 p-2"
+            className="bg-white dark:bg-slate-800 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-2 border border-slate-200 dark:border-slate-600"
           >
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
       )}
       
-      <div className="bg-slate-800/40 backdrop-blur-sm rounded-xl p-6 border border-blue-400/20 border-l-4 border-l-blue-500">
-        <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-6 border-l-4 border-l-blue-500">
+        <p className="text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">
           {content}
         </p>
       </div>
@@ -928,29 +928,29 @@ export default function ManualViewer({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-400/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-300 font-medium">Cargando manual...</p>
+          <div className="w-12 h-12 border-4 border-slate-300 dark:border-slate-600 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-300 font-medium">Cargando manual...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
       {/* Header de usuario */}
       <Header />
       
-      {/* Header superior azul con botón de volver */}
-      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 backdrop-blur-lg border-b border-blue-400/30 sticky top-0 z-40">
+      {/* Header superior */}
+      <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-600 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="text-blue-100 hover:text-white hover:bg-blue-700/50"
+                className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700"
               >
                 <Menu className="w-5 h-5" />
               </Button>
@@ -958,18 +958,18 @@ export default function ManualViewer({
                 <Button
                   onClick={onBack}
                   variant="outline"
-                  className="gap-2 bg-blue-800/60 border-blue-400/30 text-blue-100 hover:bg-blue-700/60 hover:border-blue-400/60 hover:text-white backdrop-blur-md rounded-xl px-4 py-2 transition-all duration-300"
+                  className="gap-2 bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-lg px-4 py-2"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Volver a la lista
                 </Button>
               )}
               <div>
-                <h1 className="text-xl font-bold text-white flex items-center gap-3">
-                  <BookOpen className="w-6 h-6 text-blue-200" />
+                <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-3">
+                  <BookOpen className="w-6 h-6 text-slate-600 dark:text-slate-400" />
                   {manual?.title || 'Manual'}
                 </h1>
-                <p className="text-blue-200 text-sm mt-1">
+                <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
                   Documentación técnica
                 </p>
               </div>
@@ -978,7 +978,7 @@ export default function ManualViewer({
             {onEdit && isAdmin && (
               <Button
                 onClick={onEdit}
-                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Edit className="w-4 h-4 mr-2" />
                 Editor avanzado
@@ -989,12 +989,6 @@ export default function ManualViewer({
       </div>
 
       <div className="flex flex-1">
-        {/* Efectos de fondo optimizados */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 -left-20 w-72 h-72 bg-blue-500/10 rounded-full blur-xl"></div>
-          <div className="absolute bottom-20 -right-20 w-72 h-72 bg-cyan-500/10 rounded-full blur-xl"></div>
-        </div>
-
         {/* Sidebar */}
         {!sidebarCollapsed && (
           <ModernSidebar
@@ -1009,7 +1003,7 @@ export default function ManualViewer({
         )}
 
         {/* Área principal de contenido */}
-        <main className="flex-1 relative z-10">
+        <main className="flex-1 bg-slate-50 dark:bg-slate-900">
           {/* Contenido */}
           <div className="p-8 max-h-[calc(100vh-180px)] overflow-y-auto">
             {selectedSection && selectedSection.subsections && selectedSection.subsections.length > 0 ? (
@@ -1017,23 +1011,23 @@ export default function ManualViewer({
                 <div
                   key={subsection.id}
                   ref={(el) => { subsectionRefs.current[subsection.id] = el; }}
-                  className={`mb-12 transition-all duration-300 ${
+                  className={`mb-12 transition-all ${
                     selectedSubsectionId === subsection.id 
-                      ? 'ring-2 ring-blue-400/30 bg-slate-800/20 rounded-2xl p-6' 
+                      ? 'ring-2 ring-blue-200 dark:ring-blue-800 bg-blue-50 dark:bg-blue-900/10 rounded-lg p-6' 
                       : ''
                   }`}
                 >
                   {/* Header de subsección */}
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className={`text-2xl font-bold text-white flex items-center gap-3 transition-colors ${
-                      selectedSubsectionId === subsection.id ? 'text-blue-300' : ''
+                    <h2 className={`text-2xl font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-3 ${
+                      selectedSubsectionId === subsection.id ? 'text-blue-700 dark:text-blue-300' : ''
                     }`}>
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                         selectedSubsectionId === subsection.id 
-                          ? 'bg-gradient-to-br from-blue-400 to-cyan-500' 
-                          : 'bg-gradient-to-br from-cyan-500 to-blue-600'
+                          ? 'bg-blue-500 text-white' 
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                       }`}>
-                        <Navigation className="w-4 h-4 text-white" />
+                        <Navigation className="w-4 h-4" />
                       </div>
                       {subsection.title}
                     </h2>
@@ -1043,7 +1037,7 @@ export default function ManualViewer({
                         onClick={() => setShowAddBlockDialog({subsectionId: subsection.id})}
                         variant="outline"
                         size="sm"
-                        className="border-green-400/30 text-green-400 hover:bg-green-500/10"
+                        className="border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         Agregar bloque
@@ -1077,24 +1071,24 @@ export default function ManualViewer({
                           )
                         ))
                     ) : (
-                      <div className="text-center py-16 text-gray-400">
-                        <div className="w-20 h-20 mx-auto mb-6 bg-slate-800/60 rounded-full flex items-center justify-center">
+                      <div className="text-center py-16 text-slate-500 dark:text-slate-400">
+                        <div className="w-20 h-20 mx-auto mb-6 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center">
                           <FileText className="w-10 h-10 opacity-50" />
                         </div>
                         <h3 className="text-lg font-semibold mb-2">Sin contenido disponible</h3>
-                        <p className="text-sm text-gray-500">Esta subsección aún no tiene bloques de contenido</p>
+                        <p className="text-sm text-slate-400 dark:text-slate-500">Esta subsección aún no tiene bloques de contenido</p>
                       </div>
                     )}
                   </div>
                 </div>
               ))
             ) : (
-              <div className="text-center py-20 text-gray-400">
-                <div className="w-24 h-24 mx-auto mb-8 bg-slate-800/60 rounded-full flex items-center justify-center">
+              <div className="text-center py-20 text-slate-500 dark:text-slate-400">
+                <div className="w-24 h-24 mx-auto mb-8 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center">
                   <BookOpen className="w-12 h-12 opacity-50" />
                 </div>
-                <h3 className="text-2xl font-semibold mb-4 text-white">Sección sin subsecciones</h3>
-                <p className="text-gray-400 max-w-md mx-auto leading-relaxed">
+                <h3 className="text-2xl font-semibold mb-4 text-slate-900 dark:text-slate-100">Sección sin subsecciones</h3>
+                <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
                   Esta sección no tiene subsecciones definidas. {isAdmin ? 'Usa el "Editor avanzado" para añadir contenido.' : 'Contacta al administrador para añadir contenido.'}
                 </p>
               </div>
@@ -1104,7 +1098,7 @@ export default function ManualViewer({
 
         {/* Diálogos de edición */}
         <Dialog open={!!editingBlock} onOpenChange={() => setEditingBlock(null)}>
-          <DialogContent className="bg-slate-800 border-blue-400/30 text-white max-w-2xl">
+          <DialogContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 max-w-2xl">
             <DialogHeader>
               <DialogTitle>
                 Editar bloque de {editingBlock?.type === 'text' ? 'texto' : 'video'}
@@ -1116,16 +1110,16 @@ export default function ManualViewer({
                   value={blockContent}
                   onChange={(e) => setBlockContent(e.target.value)}
                   placeholder="Contenido del bloque..."
-                  className="min-h-[200px] bg-slate-700 border-blue-400/30 text-white"
+                  className="min-h-[200px] bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
                 />
               ) : (
                 <Select value={selectedVideoId} onValueChange={setSelectedVideoId}>
-                  <SelectTrigger className="bg-slate-700 border-blue-400/30 text-white">
+                  <SelectTrigger className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100">
                     <SelectValue placeholder="Selecciona un video" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-gray-600">
+                  <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600">
                     {videoOptions.map((video) => (
-                      <SelectItem key={video.id} value={video.id} className="text-white hover:bg-slate-700">
+                      <SelectItem key={video.id} value={video.id} className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">
                         {video.title}
                       </SelectItem>
                     ))}
@@ -1133,10 +1127,10 @@ export default function ManualViewer({
                 </Select>
               )}
               <div className="flex gap-2 justify-end">
-                <Button variant="ghost" onClick={() => setEditingBlock(null)}>
+                <Button variant="ghost" onClick={() => setEditingBlock(null)} className="text-slate-600 dark:text-slate-400">
                   Cancelar
                 </Button>
-                <Button onClick={handleSaveBlock}>
+                <Button onClick={handleSaveBlock} className="bg-blue-600 hover:bg-blue-700 text-white">
                   Guardar cambios
                 </Button>
               </div>
@@ -1145,23 +1139,23 @@ export default function ManualViewer({
         </Dialog>
 
         <Dialog open={!!showAddBlockDialog} onOpenChange={() => setShowAddBlockDialog(null)}>
-          <DialogContent className="bg-slate-800 border-blue-400/30 text-white max-w-2xl">
+          <DialogContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100 max-w-2xl">
             <DialogHeader>
               <DialogTitle>Agregar nuevo bloque</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <Select value={newBlockType} onValueChange={(value: 'text' | 'video') => setNewBlockType(value)}>
-                <SelectTrigger className="bg-slate-700 border-blue-400/30 text-white">
+                <SelectTrigger className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-gray-600">
-                  <SelectItem value="text" className="text-white hover:bg-slate-700">
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600">
+                  <SelectItem value="text" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4" />
                       Bloque de texto
                     </div>
                   </SelectItem>
-                  <SelectItem value="video" className="text-white hover:bg-slate-700">
+                  <SelectItem value="video" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">
                     <div className="flex items-center gap-2">
                       <VideoIcon className="w-4 h-4" />
                       Bloque de video
@@ -1175,16 +1169,16 @@ export default function ManualViewer({
                   value={blockContent}
                   onChange={(e) => setBlockContent(e.target.value)}
                   placeholder="Contenido del bloque..."
-                  className="min-h-[200px] bg-slate-700 border-blue-400/30 text-white"
+                  className="min-h-[200px] bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
                 />
               ) : (
                 <Select value={selectedVideoId} onValueChange={setSelectedVideoId}>
-                  <SelectTrigger className="bg-slate-700 border-blue-400/30 text-white">
+                  <SelectTrigger className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100">
                     <SelectValue placeholder="Selecciona un video" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-gray-600">
+                  <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600">
                     {videoOptions.map((video) => (
-                      <SelectItem key={video.id} value={video.id} className="text-white hover:bg-slate-700">
+                      <SelectItem key={video.id} value={video.id} className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">
                         {video.title}
                       </SelectItem>
                     ))}
@@ -1193,12 +1187,13 @@ export default function ManualViewer({
               )}
 
               <div className="flex gap-2 justify-end">
-                <Button variant="ghost" onClick={() => setShowAddBlockDialog(null)}>
+                <Button variant="ghost" onClick={() => setShowAddBlockDialog(null)} className="text-slate-600 dark:text-slate-400">
                   Cancelar
                 </Button>
                 <Button 
                   onClick={handleAddBlock}
                   disabled={newBlockType === 'text' ? !blockContent.trim() : !selectedVideoId}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   Agregar bloque
                 </Button>
